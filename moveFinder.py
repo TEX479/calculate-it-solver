@@ -24,7 +24,7 @@ def _calculate_cost(buttons_availible:list[str], action:str) -> float:
     global button_costs_default
     return _cost_multiplier_by_ammount(buttons_availible.count(action)) * button_costs_default[action]
 
-def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, cost_lowest:float|None=None) -> None | tuple[int, list[str], float]:
+def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, cost_maximum:float|None=None) -> None | tuple[int, float]:
     '''
     returns `None` if button_sequence is invalid, otherwise it returns a tuple containing the following:
     - the current number of the calculation (`int`)
@@ -34,15 +34,15 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
     this function modifies the lists it gets, so give it a copy not the original list
     '''
 
-    if len(button_sequence) == 0:
-        return (number_current, buttons_availible, 0.0)
-    if button_sequence[-1] != '=': button_sequence.append('=')
-    if buttons_implemented | set(button_sequence) == buttons_implemented: return
-
     global digits
     global operations
     global operations_with_argument
     global buttons_implemented
+
+    if len(button_sequence) == 0:
+        return (number_current, 0.0)
+    if button_sequence[-1] != '=': button_sequence.append('=')
+    if buttons_implemented | set(button_sequence) != buttons_implemented: return
 
     last_operation: str = '='
     number_input: str = ''
@@ -51,10 +51,11 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
     for action in button_sequence:
         eval_equals: bool = False
         last_operation_buffer: str = ''
-        if cost_lowest != None and cost >= cost_lowest: return # costs too much
+        if cost_maximum != None and cost >= cost_maximum: return # costs too much
         if (not action in buttons_availible) and (action != '='): return # <- invalid input (can not press buttons if they are not availible)
         if action in digits:
             if not (last_operation in operations_with_argument): return # <- invalid input ("5² 2" or "5 sq 2" does not make sense)
+            if number_input == '' and action == '0': return # <- leading zeros are a waste of button inputs; can be generated without the leading zero
             number_input += action
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
             #last_button = bi
@@ -103,7 +104,7 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
 
         return # <- invalid input
 
-    return number_current, buttons_availible, cost
+    return number_current, cost
 
 def all_subsets(lst:list[str]) -> Iterator[list[str]]:
     seen: set[tuple[str, ...]] = set()
@@ -119,7 +120,7 @@ def all_subsets(lst:list[str]) -> Iterator[list[str]]:
                     seen.add(perm_tuple)  # Mark this permutation as seen
                     yield list(perm)
 
-def brute_force_solution(buttons:list[str], number_current:int, number_target:int, max_iterations:int=1000000) -> list[tuple[float, list[str]]]:
+def brute_force_solution(buttons:list[str], number_current:int, number_target:int, max_iterations:int=100_000, increase_iterations:int=20_000, debug:bool=False) -> list[tuple[float, list[str]]]:
     '''
     brute-forces solutions for the current problem.
     returns every solution found.
@@ -132,30 +133,33 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
     iterations_max_len = len(str(max_iterations))
     solutions_ammount = 0
     solutions_ammount_max_len = 2
-    cost_lowest = float(1 << 16)
+    cost_maximum = float(1 << 16)
     for subset in all_subsets(buttons):
         if iterations > max_iterations:
             break
         print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}}", end="")
-        return_value = simulate_button_sequence(button_sequence=subset, buttons_availible=buttons.copy(), number_current=number_current, cost_lowest=cost_lowest)
+        return_value = simulate_button_sequence(button_sequence=subset, buttons_availible=buttons.copy(), number_current=number_current, cost_maximum=cost_maximum)
         iterations += 1
         if return_value == None:
             continue
-        numer_evaluated, _buttons_remaining, cost = return_value
+        numer_evaluated, cost = return_value
         if numer_evaluated != number_target:
             continue
         solutions_ammount += 1
-        solutions.append((cost, subset))
-        cost_lowest = cost
-    
+        solutions.append((round(cost, 5), subset))
+        cost_maximum = min(cost*2, cost_maximum)
+        max_iterations = max(max_iterations, iterations + increase_iterations)
+    print()
     return solutions
 
 def main():
-    buttons: list[str] = [str(i) for i in range(10)] * 2 + ['add', 'sub', 'mul', 'div'] + ['add', 'sub', 'div']
+    buttons: list[str] = [str(i) for i in range(10)] * 2 + ['add', 'sub', 'mul', 'div'] * 2 #+ ['add', 'sub', 'div']
     number_current: int = 7
     number_target: int = 49
 
-    solutions = brute_force_solution(buttons=buttons, number_current=number_current, number_target=number_target)
+    solutions: list[tuple[float, list[str]]] = brute_force_solution(
+        buttons=buttons, number_current=number_current, number_target=number_target, max_iterations=100_000, increase_iterations=20_000, debug=True
+        )
     ic(solutions)
 
 if __name__ == "__main__":
