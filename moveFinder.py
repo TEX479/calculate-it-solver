@@ -51,8 +51,11 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
     for action in button_sequence:
         eval_equals: bool = False
         last_operation_buffer: str = ''
+
         if cost_maximum != None and cost >= cost_maximum: return # costs too much
-        if (not action in buttons_availible) and (action != '='): return # <- invalid input (can not press buttons if they are not availible)
+    
+        # \|/ not needed, as the "button_sequence" passed to this funciton is a subset of "buttons_availible" when passed to this function.
+        #if (not action in buttons_availible) and (action != '='): return # <- invalid input (can not press buttons if they are not availible)
         if action in digits:
             if not (last_operation in operations_with_argument): return # <- invalid input ("5² 2" or "5 sq 2" does not make sense)
             if number_input == '' and action == '0': return # <- leading zeros are a waste of button inputs; can be generated without the leading zero
@@ -89,7 +92,7 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
 
                 case 'sq' : number_current = number_current * number_current
                 case 'sqr':
-                            if int(number_input) < 0: return # <- invalid input (squareroot of negatives is not allowed)
+                            if int(number_current) < 0: return # <- invalid input (squareroot of negatives is not allowed)
                             number_current = int(number_current ** 0.5)
                 case a    : 
                             warning = f"unknown operation '{a}'. how did that slip through the validation of inputs?"
@@ -106,7 +109,7 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
 
     return number_current, cost
 
-def all_subsets(lst:list[str]) -> Iterator[list[str]]:
+def all_subsets(lst:list[str], max_turns:int|None=None) -> Iterator[list[str]]:
     seen: set[tuple[str, ...]] = set()
 
     # Iterate over all subset sizes (from 0 to len(lst))
@@ -115,12 +118,13 @@ def all_subsets(lst:list[str]) -> Iterator[list[str]]:
         for subset in itertools.combinations(lst, r):
             # Get all permutations of the subset
             for perm in itertools.permutations(subset):
+                if max_turns != None and len(perm) > max_turns: return
                 perm_tuple = tuple(perm)
                 if perm_tuple not in seen:
                     seen.add(perm_tuple)  # Mark this permutation as seen
                     yield list(perm)
 
-def brute_force_solution(buttons:list[str], number_current:int, number_target:int, max_iterations:int=100_000, increase_iterations:int=20_000, debug:bool=False) -> list[tuple[float, list[str]]]:
+def brute_force_solution(buttons:list[str], number_current:int, number_target:int, max_iterations:int=100_000, increase_iterations:int=20_000, max_turns:int|None=None, debug:bool=False) -> list[tuple[float, list[str]]]:
     '''
     brute-forces solutions for the current problem.
     returns every solution found.
@@ -134,11 +138,11 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
     solutions_ammount = 0
     solutions_ammount_max_len = 2
     cost_maximum = float(1 << 16)
-    for subset in all_subsets(buttons):
+    for subset in all_subsets(buttons, max_turns=max_turns):
         if iterations > max_iterations:
             break
-        print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}}", end="")
-        return_value = simulate_button_sequence(button_sequence=subset, buttons_availible=buttons.copy(), number_current=number_current, cost_maximum=cost_maximum)
+        if debug: print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}}", end="")
+        return_value = simulate_button_sequence(button_sequence=subset.copy(), buttons_availible=buttons.copy(), number_current=number_current, cost_maximum=cost_maximum)
         iterations += 1
         if return_value == None:
             continue
@@ -149,7 +153,7 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
         solutions.append((round(cost, 5), subset))
         cost_maximum = min(cost*2, cost_maximum)
         max_iterations = max(max_iterations, iterations + increase_iterations)
-    print()
+    if debug: print()
     return solutions
 
 def main():
