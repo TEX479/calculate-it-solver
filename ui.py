@@ -134,15 +134,17 @@ class GUI():
         solutions = moveFinder.brute_force_solution(
             buttons=buttons.copy(), number_current=number_current, number_target=number_target, max_turns=max_turns
         )
-        solutions = sorted(solutions, key=lambda x: x[0])
-        print(solutions)
+        solutions = reversed(sorted(solutions, key=lambda x: x[0]))
+        #print(solutions)
         solutions_readable = [f"{tu[0]:.02f}: {tu[1]}" for tu in solutions]
         self.show_solutions(solutions=solutions_readable)
 
     def show_solutions(self, solutions:list[str]) -> None:
         self.text_box.configure(state="normal")
+        self.text_box.insert("end", "----------------")
         for solution in solutions:
             self.text_box.insert("end", "\n" + solution)
+        self.text_box.yview('end') # type: ignore
         self.text_box.configure(state="disabled")
 
 

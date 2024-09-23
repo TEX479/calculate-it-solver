@@ -93,7 +93,7 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
                 case 'sq' : number_current = number_current * number_current
                 case 'sqr':
                             if int(number_current) < 0: return # <- invalid input (squareroot of negatives is not allowed)
-                            number_current = int(number_current ** 0.5)
+                            number_current = round(number_current ** 0.5)
                 case a    : 
                             warning = f"unknown operation '{a}'. how did that slip through the validation of inputs?"
                             ic(warning)
