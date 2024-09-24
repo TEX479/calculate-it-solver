@@ -5,13 +5,13 @@ from sympy import isprime, prevprime, nextprime # type: ignore
 
 
 digits: set[str] = {'0','1','2','3','4','5','6','7','8','9'}
-operations: set[str] = {'add','sub','mul','div','mod','sq','sqr','switch','primes','X++'}
+operations: set[str] = {'add','sub','mul','div','mod','sq','sqr','swap','primes','X++'}
 operations_with_argument : set[str] = {'add', 'sub', 'mul', 'div', 'mod'}
 buttons_implemented: set[str] =  digits | operations | {'='}
 button_costs_default: dict[str, float] = {'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0,
-                                          'add': 1.0, 'sub': 1.0, 'mul': 1.0, 'div': 1.0,
-                                          'mod': 1.0, 'sq': 1.0, 'sqr': 1.0,
-                                          'switch': 1.0, 'primes': 1.0, 'X++': 1.0,
+                                          'add': 1.1, 'sub': 1.1, 'mul': 1.1, 'div': 1.1,
+                                          'mod': 1.1, 'sq': 1.0, 'sqr': 1.0,
+                                          'swap': 0.8, 'primes': 0.8, 'X++': 1.0,
                                           '=': 0}
 
 def _find_nearest_prime(number_current: int) -> int:
@@ -101,7 +101,7 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             if last_operation in operations_with_argument and number_input == '': return None # <- invalid input ("x + /" does not make sense)
             match last_operation:
                 case 'add': number_current += int(number_input)
-                case 'sub': number_current -= int(number_input)
+                case 'sub': number_current = max(number_current - int(number_input), 0) # the game does not allow you to be under 0, I learned that the hard way
                 case 'mul': number_current *= int(number_input)
                 case 'div':
                     if int(number_input) == 0: return None # <- invalid input (a // 0 is not defined)
@@ -114,7 +114,7 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                 case 'sqr':
                     if int(number_current) < 0: return None # <- invalid input (squareroot of negatives is not allowed)
                     number_current = round(number_current ** 0.5)
-                case 'switch': number_current, number_target = number_target, number_current
+                case 'swap': number_current, number_target = number_target, number_current
                 case 'primes': number_current = _find_nearest_prime(number_current=number_current)
                 case 'X++': number_current += 1
                 case a    : 
