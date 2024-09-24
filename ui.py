@@ -132,7 +132,7 @@ class GUI():
         max_turns = None if max_turns == "" else int(max_turns)
 
         solutions = moveFinder.brute_force_solution(
-            buttons=buttons.copy(), number_current=number_current, number_target=number_target, max_turns=max_turns
+            buttons=buttons.copy(), number_current=number_current, number_target=number_target, max_turns=max_turns, debug=True
         )
         solutions = reversed(sorted(solutions, key=lambda x: x[0]))
         #print(solutions)

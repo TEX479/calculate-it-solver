@@ -4,13 +4,34 @@ from icecream import ic # type: ignore
 
 
 digits: set[str] = {'0','1','2','3','4','5','6','7','8','9'}
-operations: set[str] = {'add','sub','mul','div','mod','sq','sqr'}
+operations: set[str] = {'add','sub','mul','div','mod','sq','sqr','switch','primes','X++'}
 operations_with_argument : set[str] = {'add', 'sub', 'mul', 'div', 'mod'}
 buttons_implemented: set[str] =  digits | operations | {'='}
-button_costs_default: dict[str, float] = {'0': 1, '1': 1, '2': 1, '3': 1, '4': 1, '5': 1, '6': 1, '7': 1, '8': 1, '9': 1,
-                                          'add': 1, 'sub': 1, 'mul': 1, 'div': 1,
-                                          'mod': 1.2, 'sq': 1.2, 'sqr': 1.2,
+button_costs_default: dict[str, float] = {'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0,
+                                          'add': 1.0, 'sub': 1.0, 'mul': 1.0, 'div': 1.0,
+                                          'mod': 1.0, 'sq': 1.0, 'sqr': 1.0,
+                                          'switch': 1.0, 'primes': 1.0, 'X++': 1.0,
                                           '=': 0}
+
+def _is_prime(number:int) -> bool:
+    if number < 2:
+        return False
+    if number == 2:
+        return True
+    for i in range(2, number):
+        if (number % i) != 0: return False
+    return True
+
+def _find_nearest_prime(number_current:int) -> int:
+    current_prime = 2
+    for potential_prime in range(number_current):
+        if _is_prime(potential_prime):
+            current_prime = potential_prime
+    for potential_prime in range(number_current, number_current + (number_current - current_prime)): # maybe add 1 to fix potential off-by-one errors.
+        if _is_prime(potential_prime):
+            current_prime = potential_prime
+            break
+    return current_prime
 
 def _cost_multiplier_by_ammount(ammount:int) -> float:
     if ammount <= 1: return 4.0
@@ -24,10 +45,9 @@ def _calculate_cost(buttons_availible:list[str], action:str) -> float:
     global button_costs_default
     return _cost_multiplier_by_ammount(buttons_availible.count(action)) * button_costs_default[action]
 
-def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, cost_maximum:float|None=None) -> None | tuple[int, float]:
+def check_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, number_target:int, coins:int=0, cost_maximum:float|None=None) -> None | float:
     '''
     returns `None` if button_sequence is invalid, otherwise it returns a tuple containing the following:
-    - the current number of the calculation (`int`)
     - the remaining actions/button uses (`list[str]`)
     - the cost of performing that operation (using a custom cost-function) (`float`)
 
@@ -39,14 +59,16 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
     global operations_with_argument
     global buttons_implemented
 
-    if len(button_sequence) == 0:
-        return (number_current, 0.0)
-    if button_sequence[-1] != '=': button_sequence.append('=')
-    if buttons_implemented | set(button_sequence) != buttons_implemented: return
-
     last_operation: str = '='
     number_input: str = ''
     cost:float = 0.0
+    number_last = number_current
+
+    if len(button_sequence) == 0:
+        if number_current == number_target: return cost
+        else: return None
+    if button_sequence[-1] != '=': button_sequence.append('=')
+    if buttons_implemented | set(button_sequence) != buttons_implemented: return # <- invalid, because button_sequence contains invalid buttons
 
     for action in button_sequence:
         eval_equals: bool = False
@@ -66,7 +88,7 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
             continue
 
         if action in operations:
-            if last_operation in operations_with_argument and number_input == '': return # <- invalid input ("a + /" does not make sense)
+            if last_operation in operations_with_argument and number_input == '': return # <- invalid input ("x + /" does not make sense)
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
             buttons_availible.remove(action)
             if last_operation != '=':
@@ -78,36 +100,41 @@ def simulate_button_sequence(button_sequence:list[str], buttons_availible:list[s
         
         if eval_equals or action == "=":
             if last_operation == '=' and action == '=': continue
-            if last_operation in operations_with_argument and number_input == '': return # <- invalid input ("a + /" does not make sense)
+            if last_operation in operations_with_argument and number_input == '': return None # <- invalid input ("x + /" does not make sense)
             match last_operation:
                 case 'add': number_current += int(number_input)
                 case 'sub': number_current -= int(number_input)
                 case 'mul': number_current *= int(number_input)
                 case 'div':
-                            if int(number_input) == 0: return # <- invalid input (a // 0 is not defined)
-                            number_current = number_current // int(number_input)
+                    if int(number_input) == 0: return None # <- invalid input (a // 0 is not defined)
+                    number_current = number_current // int(number_input)
                 case 'mod':
-                            if int(number_input) <= 0: return # <- invalid input (a mod 0 is not defined)
-                            number_current = number_current % int(number_input)
+                    if int(number_input) <= 0: return None # <- invalid input (a mod 0 is not defined)
+                    number_current = number_current % int(number_input)
 
                 case 'sq' : number_current = number_current * number_current
                 case 'sqr':
-                            if int(number_current) < 0: return # <- invalid input (squareroot of negatives is not allowed)
-                            number_current = round(number_current ** 0.5)
+                    if int(number_current) < 0: return None # <- invalid input (squareroot of negatives is not allowed)
+                    number_current = round(number_current ** 0.5)
+                case 'switch': number_current, number_target = number_target, number_current
+                case 'primes': number_current = _find_nearest_prime(number_current=number_current)
+                case 'X++': number_current += 1
                 case a    : 
-                            warning = f"unknown operation '{a}'. how did that slip through the validation of inputs?"
-                            ic(warning)
-                            return # <- invalid input
+                    warning = f"unknown operation '{a}'. how did that slip through the validation of inputs?"
+                    ic(warning)
+                    return None # <- input not implemented
             
+            if number_current != number_last: number_last = number_current
+            else: return None # <- means whatever steps where taken did only increase cost but did not change anything
+
             number_input = ''
-            #last_button = '='
             last_operation = '=' if last_operation_buffer == '' else last_operation_buffer
-            #buttons_availible.remove(action)
             continue
 
-        return # <- invalid input
+        return None # <- invalid input
 
-    return number_current, cost
+    if number_current != number_target: return None
+    return cost
 
 def all_subsets(lst:list[str], max_turns:int|None=None) -> Iterator[list[str]]:
     seen: set[tuple[str, ...]] = set()
@@ -142,13 +169,14 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
         if iterations > max_iterations:
             break
         if debug: print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}}", end="")
-        return_value = simulate_button_sequence(button_sequence=subset.copy(), buttons_availible=buttons.copy(), number_current=number_current, cost_maximum=cost_maximum)
+        return_value = check_button_sequence(
+            button_sequence=subset.copy(), buttons_availible=buttons.copy(), number_current=number_current, number_target=number_target, cost_maximum=cost_maximum
+        )
         iterations += 1
         if return_value == None:
             continue
-        numer_evaluated, cost = return_value
-        if numer_evaluated != number_target:
-            continue
+        cost = return_value
+
         solutions_ammount += 1
         solutions.append((round(cost, 5), subset))
         cost_maximum = min(cost*2, cost_maximum)
