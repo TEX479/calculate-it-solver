@@ -5,5 +5,5 @@
 - cut
 
 ## misc improvements
-- improve speed of "primes" calculations
-- remove "replicas" like "+1+2" = "+2+1"
+- remove "replicas" ("add 1 add 2" = "add 2 add 1")
+- remove processing invalid replicas (if "div 0" is invalid, "div 0 sq" does not have to be processed)
