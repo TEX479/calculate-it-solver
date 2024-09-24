@@ -1,6 +1,7 @@
 import itertools
 from typing import Iterator
 from icecream import ic # type: ignore
+from sympy import isprime, prevprime, nextprime # type: ignore
 
 
 digits: set[str] = {'0','1','2','3','4','5','6','7','8','9'}
@@ -13,25 +14,22 @@ button_costs_default: dict[str, float] = {'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0
                                           'switch': 1.0, 'primes': 1.0, 'X++': 1.0,
                                           '=': 0}
 
-def _is_prime(number:int) -> bool:
-    if number < 2:
-        return False
-    if number == 2:
-        return True
-    for i in range(2, number):
-        if (number % i) != 0: return False
-    return True
-
-def _find_nearest_prime(number_current:int) -> int:
-    current_prime = 2
-    for potential_prime in range(number_current):
-        if _is_prime(potential_prime):
-            current_prime = potential_prime
-    for potential_prime in range(number_current, number_current + (number_current - current_prime)): # maybe add 1 to fix potential off-by-one errors.
-        if _is_prime(potential_prime):
-            current_prime = potential_prime
-            break
-    return current_prime
+def _find_nearest_prime(number_current: int) -> int:
+    if isprime(number_current):
+        return number_current
+    if number_current <= 2: return 2
+    
+    lower = prevprime(number_current)
+    upper = nextprime(number_current)
+    
+    if not isinstance(lower, int) or not isinstance(upper, int):
+        raise TypeError(f"'prevprime()' or 'nextprime()' did not return an int. this is a reminder that you should not copy code from chargpt.")
+    
+    # Return the closest prime
+    if abs(lower - number_current) <= abs(upper - number_current):
+        return lower
+    else:
+        return upper
 
 def _cost_multiplier_by_ammount(ammount:int) -> float:
     if ammount <= 1: return 4.0
