@@ -74,7 +74,7 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
         if cost_maximum != None and cost >= cost_maximum: return "NOT SOLVED" # costs too much
     
         if action in digits:
-            if not (last_operation in operations_with_argument): return "INVALID TREE" # <- invalid input ("5² 2" or "5 sq 2" does not make sense)
+            if not (last_operation in operations_with_argument): return "INVALID TREE" # <- invalid input ("5 sq 2" does not make sense)
             if number_input == '' and action == '0': return "INVALID TREE" # <- leading zeros are a waste of button inputs; can be generated without the leading zero
             number_input += action
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
@@ -83,7 +83,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             continue
 
         if action in operations:
-            if last_operation in operations_with_argument and number_input == '': return "INVALID TREE" # <- invalid input ("x + /" does not make sense)
+            if last_operation in operations_with_argument and number_input == '':
+                return "INVALID TREE" if action != "=" else "NOT SOLVED" # <- invalid input ("x + /" does not make sense) (but we do not want to add "add" to the invalid_trees either)
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
             buttons_availible.remove(action)
             if last_operation != '=':
@@ -95,7 +96,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
         
         if eval_equals or action == "=":
             if last_operation == '=' and action == '=': continue
-            if last_operation in operations_with_argument and number_input == '': return "INVALID TREE" # <- invalid input ("x + /" does not make sense)
+            if last_operation in operations_with_argument and number_input == '':
+                return "INVALID TREE" if action != "=" else "NOT SOLVED" # <- invalid input ("x + /" does not make sense) (but we do not want to add "add" to the invalid_trees either)
             match last_operation:
                 case 'add': number_current += int(number_input)
                 case 'sub': number_current = max(number_current - int(number_input), 0) # the game does not allow you to be under 0, I learned that the hard way
@@ -133,6 +135,7 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                     return None # <- input not implemented
             
             if number_current != number_last: number_last = number_current
+            elif action == "=": pass
             else: return "INVALID TREE" # <- means whatever steps where taken did only increase cost but did not change anything
 
             number_input = ''
@@ -146,7 +149,10 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
 
 def _is_valid_branch(new_branch: tuple[str, ...]) -> bool:
     # Check if any invalid branch is a prefix of the new branch
-    return all(invalid_branch != new_branch[:len(invalid_branch)] for invalid_branch in invalid_branches)
+    for length in range(1, len(new_branch)):
+        if new_branch[:length] in invalid_branches:
+            return False
+    return True
 
 def all_subsets(lst:list[str], max_turns:int|None=None) -> Iterator[list[str]]:
     seen: set[tuple[str, ...]] = set()
@@ -188,6 +194,9 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
         if return_value == "NOT SOLVED":
             continue
         elif return_value == "INVALID TREE":
+            #if debug:
+            #    new_invalid_branch = subset
+            #    ic(new_invalid_branch)
             invalid_branches.add(tuple(subset))
             continue
 
