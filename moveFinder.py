@@ -14,7 +14,7 @@ button_costs_default: dict[str, float] = {'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0
                                           'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'reverse':0.9, 'near': 2.0, '->25': 1.2, 'cut': 1.0,
                                           '=': 0}
 
-invalid_trees: set[tuple[str, ...]] = set()
+invalid_branches: set[tuple[str, ...]] = set()
 
 
 def _find_nearest_prime(number_current: int) -> int:
@@ -144,6 +144,10 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
     if number_current != number_target: return "NOT SOLVED"
     return cost
 
+def _is_valid_branch(new_branch: tuple[str, ...]) -> bool:
+    # Check if any invalid branch is a prefix of the new branch
+    return all(invalid_branch != new_branch[:len(invalid_branch)] for invalid_branch in invalid_branches)
+
 def all_subsets(lst:list[str], max_turns:int|None=None) -> Iterator[list[str]]:
     seen: set[tuple[str, ...]] = set()
 
@@ -155,7 +159,7 @@ def all_subsets(lst:list[str], max_turns:int|None=None) -> Iterator[list[str]]:
             for perm in itertools.permutations(subset):
                 if max_turns != None and len(perm) > max_turns: return
                 perm_tuple = tuple(perm)
-                if (perm_tuple not in seen) and (perm_tuple not in invalid_trees):
+                if (perm_tuple not in seen) and (_is_valid_branch(perm_tuple)):
                     seen.add(perm_tuple)  # Mark this permutation as seen
                     yield list(perm)
 
@@ -184,7 +188,7 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
         if return_value == "NOT SOLVED":
             continue
         elif return_value == "INVALID TREE":
-            invalid_trees.add(tuple(subset))
+            invalid_branches.add(tuple(subset))
             continue
 
         cost = return_value
