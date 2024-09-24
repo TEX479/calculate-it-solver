@@ -1,18 +1,15 @@
 ### Contents
 - [Why?](#why)
+- [Setup](#setup)
 - [Usage](#usagee)
 
 
 # Why?
 So I saw a video about a game called ["Calculate It"](https://store.steampowered.com/app/3043740/Calculate_It/). A rougelike game about calculating. The base game mechanic is a limit for each button and a shop where you can re-buy these buttons, among some new ones. The person playing the game sometimes said things along the lines of "I don't think I am playing the most optimal way". That got me thinking. There are some buttons that have random effects, but most of them are strictly defined in their function ("+" never devide the number; unlike "add random ammount between 1 and 10" or "add use to random button"). Since most of the game's solutions are predictable, I could probably create a program that finds the most optimal solution to a given set of buttons that are allowed and a inital number that needs to be turned into a given target number. Well this project contains my attempts at finding out if I could.
 
-# Usage
-This program is currently only a prototype. If you want to use it (I encourage you to do so if you know what you are doing) here is a quick overview.\
-Remember, this program is not a finished product. Everything is WIP and I did not intend on shipping a perfect system that plays the game for you.\
+# Setup
+First things first I will not release any builds any time soon (except if there is a huge demand for it), so you'll have to run it from source. That means you will have to download the sourcecode install python and this projects dependencies and run the python files you are interested in.\
 \
-First things first I will not release any builds any time soon (except if there is a huge demand for it), so you'll have to run it from source. That means you will have to download the sourcecode install python and this projects dependencies and run the python files you are interested in.
-
-## step by step guide on how to run this.
 DISCLAIMER: I am just a dude who doesn't know what he's doing. I don't take any kind of responsibility for any damages caused by following any of my advice at all. I belive every step that is required for running this tool is harmless, but I can only say "works on my machine" as every PC is different.\
 \
 All good? You still want to do this?\
@@ -39,6 +36,12 @@ in the root folder of the project.\
 \
 This should be all. If you run into any issues, you can check the issues tab [over here](https://github.com/TEX479/calculate-it-solver/issues) and check if anyone else has the same problem. If not, feel free to open a new issue and describe you problem as detailed as possible.
 
+# Usage
+This program is currently only a prototype. If you want to use it (I encourage you to do so if you know what you are doing) here is a quick overview.\
+Remember, this program is not a finished product. Everything is WIP and I did not intend on shipping a perfect system that plays the game for you.\
+\
+If you are not a dev and just want to find solutions to your games, you are probably interested in the UI.
+
 ## how to use the ui
 NOTE: The UI is subject to change. This guide may be outdated.\
 \
@@ -57,7 +60,7 @@ Lastly the big box at the bottom. This wil show you the solutions it found once 
 3.48: ['primes', 'add', '2']
 3.48: ['add', '2', 'primes']
 ```
-This shows all the solutions it found and how much the program likes the solution. The first number is the "cost". Lower values of "cost" mean that the solution next to it will be more optimal (for example wasing fewer buttons or not using buttons that have fewer uses left). Next to that is a list (starting and ending with square brackets `[]`). The elements of that list are showing what steps the program took to solve the puzzle. Note that this program does not show when the user has to press the evaluate button `->`, but this should be pretty straight forward: whenever there is a new operation (so not a number) after any number, just press `->`.\
+This shows all the solutions it found and how much the program likes the solution. The first number is the "cost". Lower values of "cost" mean that the solution next to it will be more optimal (for example wasting fewer buttons or not using buttons that have fewer uses left). Next to that is a list (starting and ending with square brackets `[]`). The elements of that list are showing what steps the program took to solve the puzzle. Note that this program does not show when the user has to press the evaluate button `->`, but this should be pretty straight forward: whenever there is a new operation (so not a number) after any number, just press `->`.\
 \
 If the program only shows
 ```
