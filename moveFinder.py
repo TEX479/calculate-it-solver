@@ -1,5 +1,5 @@
 import itertools
-from typing import Iterator
+from typing import Iterator, Literal
 from icecream import ic # type: ignore
 from sympy import isprime, prevprime, nextprime # type: ignore
 
@@ -13,6 +13,9 @@ button_costs_default: dict[str, float] = {'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0
                                           'mod': 1.1, 'sq': 1.0, 'sqr': 1.0,
                                           'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'reverse':0.9, 'near': 2.0, '->25': 1.2, 'cut': 1.0,
                                           '=': 0}
+
+invalid_trees: set[tuple[str, ...]] = set()
+
 
 def _find_nearest_prime(number_current: int) -> int:
     if isprime(number_current):
@@ -43,12 +46,8 @@ def _calculate_cost(buttons_availible:list[str], action:str) -> float:
     global button_costs_default
     return _cost_multiplier_by_ammount(buttons_availible.count(action)) * button_costs_default[action]
 
-def check_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, number_target:int, coins:int=0, cost_maximum:float|None=None) -> None | float:
+def check_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, number_target:int, coins:int=0, cost_maximum:float|None=None) -> float | Literal["INVALID TREE"] | Literal["NOT SOLVED"]:
     '''
-    returns `None` if button_sequence is invalid, otherwise it returns a tuple containing the following:
-    - the remaining actions/button uses (`list[str]`)
-    - the cost of performing that operation (using a custom cost-function) (`float`)
-
     this function modifies the lists it gets, so give it a copy not the original list
     '''
 
@@ -64,21 +63,19 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
 
     if len(button_sequence) == 0:
         if number_current == number_target: return cost
-        else: return None
+        else: return "NOT SOLVED"
     if button_sequence[-1] != '=': button_sequence.append('=')
-    if buttons_implemented | set(button_sequence) != buttons_implemented: return # <- invalid, because button_sequence contains invalid buttons
+    if buttons_implemented | set(button_sequence) != buttons_implemented: return "INVALID TREE" # <- invalid, because button_sequence contains invalid buttons
 
     for action in button_sequence:
         eval_equals: bool = False
         last_operation_buffer: str = ''
 
-        if cost_maximum != None and cost >= cost_maximum: return # costs too much
+        if cost_maximum != None and cost >= cost_maximum: return "NOT SOLVED" # costs too much
     
-        # \|/ not needed, as the "button_sequence" passed to this funciton is a subset of "buttons_availible" when passed to this function.
-        #if (not action in buttons_availible) and (action != '='): return # <- invalid input (can not press buttons if they are not availible)
         if action in digits:
-            if not (last_operation in operations_with_argument): return # <- invalid input ("5² 2" or "5 sq 2" does not make sense)
-            if number_input == '' and action == '0': return # <- leading zeros are a waste of button inputs; can be generated without the leading zero
+            if not (last_operation in operations_with_argument): return "INVALID TREE" # <- invalid input ("5² 2" or "5 sq 2" does not make sense)
+            if number_input == '' and action == '0': return "INVALID TREE" # <- leading zeros are a waste of button inputs; can be generated without the leading zero
             number_input += action
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
             #last_button = bi
@@ -86,7 +83,7 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             continue
 
         if action in operations:
-            if last_operation in operations_with_argument and number_input == '': return # <- invalid input ("x + /" does not make sense)
+            if last_operation in operations_with_argument and number_input == '': return "INVALID TREE" # <- invalid input ("x + /" does not make sense)
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
             buttons_availible.remove(action)
             if last_operation != '=':
@@ -98,21 +95,21 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
         
         if eval_equals or action == "=":
             if last_operation == '=' and action == '=': continue
-            if last_operation in operations_with_argument and number_input == '': return None # <- invalid input ("x + /" does not make sense)
+            if last_operation in operations_with_argument and number_input == '': return "INVALID TREE" # <- invalid input ("x + /" does not make sense)
             match last_operation:
                 case 'add': number_current += int(number_input)
                 case 'sub': number_current = max(number_current - int(number_input), 0) # the game does not allow you to be under 0, I learned that the hard way
                 case 'mul': number_current *= int(number_input)
                 case 'div':
-                    if int(number_input) == 0: return None # <- invalid input (a // 0 is not defined)
+                    if int(number_input) == 0: return "INVALID TREE" # <- invalid input (a // 0 is not defined)
                     number_current = number_current // int(number_input)
                 case 'mod':
-                    if int(number_input) <= 0: return None # <- invalid input (a mod 0 is not defined)
+                    if int(number_input) <= 0: return "INVALID TREE" # <- invalid input (a mod 0 is not defined)
                     number_current = number_current % int(number_input)
 
                 case 'sq' : number_current = number_current * number_current
                 case 'sqr':
-                    if int(number_current) < 0: return None # <- invalid input (squareroot of negatives is not allowed)
+                    if int(number_current) < 0: return "INVALID TREE" # <- invalid input (squareroot of negatives is not allowed)
                     number_current = round(number_current ** 0.5)
                 case 'swap': number_current, number_target = number_target, number_current
                 case 'primes': number_current = _find_nearest_prime(number_current=number_current)
@@ -127,23 +124,24 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                 case '->25':
                     number_current = 25
                 case 'cut':
-                    if len(str(number_target)) < 2: return None # <- the game does not cut the first digit, if it is the only one
+                    if len(str(number_target)) < 2: return "INVALID TREE" # <- the game does not cut the first digit, if it is the only one
                     number_target = int(str(number_target)[1:])
                 case a    : 
                     warning = f"unknown operation '{a}'. how did that slip through the validation of inputs?"
-                    ic(warning)
+                    #ic(warning)
+                    raise ValueError(warning)
                     return None # <- input not implemented
             
             if number_current != number_last: number_last = number_current
-            else: return None # <- means whatever steps where taken did only increase cost but did not change anything
+            else: return "INVALID TREE" # <- means whatever steps where taken did only increase cost but did not change anything
 
             number_input = ''
             last_operation = '=' if last_operation_buffer == '' else last_operation_buffer
             continue
 
-        return None # <- invalid input
+        return "INVALID TREE" # <- invalid input
 
-    if number_current != number_target: return None
+    if number_current != number_target: return "NOT SOLVED"
     return cost
 
 def all_subsets(lst:list[str], max_turns:int|None=None) -> Iterator[list[str]]:
@@ -157,7 +155,7 @@ def all_subsets(lst:list[str], max_turns:int|None=None) -> Iterator[list[str]]:
             for perm in itertools.permutations(subset):
                 if max_turns != None and len(perm) > max_turns: return
                 perm_tuple = tuple(perm)
-                if perm_tuple not in seen:
+                if (perm_tuple not in seen) and (perm_tuple not in invalid_trees):
                     seen.add(perm_tuple)  # Mark this permutation as seen
                     yield list(perm)
 
@@ -183,8 +181,12 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
             button_sequence=subset.copy(), buttons_availible=buttons.copy(), number_current=number_current, number_target=number_target, cost_maximum=cost_maximum
         )
         iterations += 1
-        if return_value == None:
+        if return_value == "NOT SOLVED":
             continue
+        elif return_value == "INVALID TREE":
+            invalid_trees.add(tuple(subset))
+            continue
+
         cost = return_value
 
         solutions_ammount += 1
