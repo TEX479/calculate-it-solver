@@ -46,11 +46,17 @@ class GUI():
         self.entry_num_tar = tkinter.Entry(master=self.nbr_diplays, foreground=fg, background=bg, textvariable=self.num_tar_tvar)
         self.entry_num_tar.grid(row=1, column=1)
 
-        self.lbl_num_mt = tkinter.Label(master=self.nbr_diplays, foreground=fg, background=bg, text="max turns:")
-        self.lbl_num_mt.grid(row=2, column=0)
-        self.num_mt_tvar = tkinter.Variable(master=self.mw, value="")
-        self.entry_num_mt = tkinter.Entry(master=self.nbr_diplays, foreground=fg, background=bg, textvariable=self.num_mt_tvar)
-        self.entry_num_mt.grid(row=2, column=1)
+        self.lbl_iters = tkinter.Label(master=self.nbr_diplays, foreground=fg, background=bg, text="iterations:")
+        self.lbl_iters.grid(row=0, column=2, padx=5)
+        self.iters_tvar = tkinter.Variable(master=self.mw, value="100_000")
+        self.entry_iters = tkinter.Entry(master=self.nbr_diplays, foreground=fg, background=bg, textvariable=self.iters_tvar)
+        self.entry_iters.grid(row=0, column=3)
+
+        self.lbl_inc_iters = tkinter.Label(master=self.nbr_diplays, foreground=fg, background=bg, text="increase iterations:")
+        self.lbl_inc_iters.grid(row=1, column=2, padx=5)
+        self.inc_iters_tvar = tkinter.Variable(master=self.mw, value="20_000")
+        self.entry_inc_iters = tkinter.Entry(master=self.nbr_diplays, foreground=fg, background=bg, textvariable=self.inc_iters_tvar)
+        self.entry_inc_iters.grid(row=1, column=3)        
 
         """
         ui-elements for controlling the calculator
@@ -64,6 +70,13 @@ class GUI():
             master=self.btns_ctrl, foreground=fg, background=bg, text=f"CALCULATE", command=self.calculate
         )
         self.btn_calculate.grid(row=0, column=1)
+
+        self.debug_tvar = tkinter.IntVar(self.mw)
+        self.checkbox_debug = tkinter.Checkbutton(
+            master=self.btns_ctrl, foreground=fg, background=bg, text="debug", variable=self.debug_tvar, onvalue=1, offvalue=0
+        )
+        self.checkbox_debug.grid(row=0, column=2)
+        self.checkbox_debug.configure(state="normal", selectcolor=bg)
 
         """
         buttons for the game
@@ -128,11 +141,17 @@ class GUI():
         number_current = int(number_current)
         number_target = str(self.num_tar_tvar.get()) # type: ignore
         number_target = int(number_target)
-        max_turns = str(self.num_mt_tvar.get()) # type: ignore
+        max_turns = str(self.iters_tvar.get()) # type: ignore
         max_turns = None if max_turns == "" else int(max_turns)
+        iterations = str(self.iters_tvar.get()) # type: ignore
+        iterations = int(iterations)
+        inc_iterations = str(self.inc_iters_tvar.get()) # type: ignore
+        inc_iterations = int(inc_iterations)
+        debug = bool(self.debug_tvar.get())
 
         solutions = moveFinder.brute_force_solution(
-            buttons=buttons.copy(), number_current=number_current, number_target=number_target, max_turns=max_turns, debug=True
+            buttons=buttons.copy(), number_current=number_current, number_target=number_target,
+            max_iterations=iterations, increase_iterations=inc_iterations, debug=debug
         )
         solutions = reversed(sorted(solutions, key=lambda x: x[0]))
         #print(solutions)
@@ -141,9 +160,9 @@ class GUI():
 
     def show_solutions(self, solutions:list[str]) -> None:
         self.text_box.configure(state="normal")
-        self.text_box.insert("end", "----------------")
+        self.text_box.insert("end", "----------------\n")
         for solution in solutions:
-            self.text_box.insert("end", "\n" + solution)
+            self.text_box.insert("end", solution + "\n")
         self.text_box.yview('end') # type: ignore
         self.text_box.configure(state="disabled")
 

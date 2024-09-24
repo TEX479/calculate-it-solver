@@ -149,7 +149,7 @@ def all_subsets(lst:list[str], max_turns:int|None=None) -> Iterator[list[str]]:
                     seen.add(perm_tuple)  # Mark this permutation as seen
                     yield list(perm)
 
-def brute_force_solution(buttons:list[str], number_current:int, number_target:int, max_iterations:int=100_000, increase_iterations:int=20_000, max_turns:int|None=None, debug:bool=False) -> list[tuple[float, list[str]]]:
+def brute_force_solution(buttons:list[str], number_current:int, number_target:int, max_iterations:int=100_000, increase_iterations:int=20_000, debug:bool=False) -> list[tuple[float, list[str]]]:
     '''
     brute-forces solutions for the current problem.
     returns every solution found.
@@ -163,7 +163,7 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
     solutions_ammount = 0
     solutions_ammount_max_len = 2
     cost_maximum = float(1 << 16)
-    for subset in all_subsets(buttons, max_turns=max_turns):
+    for subset in all_subsets(buttons):
         if iterations > max_iterations:
             break
         if debug: print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}}", end="")
