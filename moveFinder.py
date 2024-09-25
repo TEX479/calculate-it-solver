@@ -5,10 +5,12 @@ from sympy import isprime, prevprime, nextprime # type: ignore
 
 
 digits: set[str] = {'0','1','2','3','4','5','6','7','8','9'}
-operations_single: set[str] = {'+','-','*','/','%','sq','sqr','swap','primes','X++','reverse','near','->25','cut'}
+operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','->25','cut'}
 operations_with_argument : set[str] = {'+', '-', '*', '/', '%'}
 operations_replace: set[str] = {f"{a}->{b}" for a in range(10) for b in range(10) if a != b}
-buttons_implemented: set[str] =  digits | operations_single | operations_replace | {'='}
+operations_append: set[str] = {f"X{a}" for a in range(10)}
+operations_prepend: set[str] = {f"{a}X" for a in range(1, 10)}
+buttons_implemented: set[str] =  digits | operations_simple | operations_with_argument | operations_replace | operations_append | operations_prepend | {'='}
 button_costs_default: dict[str, float] = {
     '0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0,
     '+': 1.1, '-': 1.1, '*': 1.1, '/': 1.1,
@@ -16,6 +18,8 @@ button_costs_default: dict[str, float] = {
     'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'X--': 1.0, 'reverse':0.9, 'near': 2.0, '->25': 1.2, 'cut': 1.0,
     '=': 0
     }
+for name in operations_append | operations_prepend | operations_replace:
+    button_costs_default[name] = 0.9
 
 invalid_branches: set[tuple[str, ...]] = set()
 
@@ -53,12 +57,6 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
     '''
     this function modifies the lists it gets, so give it a copy not the original list
     '''
-
-    global digits
-    global operations_single
-    global operations_with_argument
-    global buttons_implemented
-
     last_operation: str = '='
     number_input: str = ''
     cost:float = 0.0
@@ -68,7 +66,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
         if number_current == number_target: return cost
         else: return "NOT SOLVED"
     if button_sequence[-1] != '=': button_sequence.append('=')
-    if buttons_implemented | set(button_sequence) != buttons_implemented: return "INVALID TREE" # <- invalid, because button_sequence contains invalid buttons
+    if buttons_implemented | set(button_sequence) != buttons_implemented:
+        return "INVALID TREE" # <- invalid, because button_sequence contains invalid buttons
 
     for action in button_sequence:
         eval_equals: bool = False
@@ -85,11 +84,11 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             buttons_availible.remove(action)
             continue
 
-        if action in operations_single:
+        if action in (buttons_implemented ^ digits):
             if last_operation in operations_with_argument and number_input == '':
                 return "INVALID TREE" if action != "=" else "NOT SOLVED" # <- invalid input ("x + /" does not make sense) (but we do not want to add "+" to the invalid_trees either)
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
-            buttons_availible.remove(action)
+            if action != "=": buttons_availible.remove(action)
             if last_operation != '=':
                 eval_equals = True
                 last_operation_buffer = action
@@ -119,6 +118,7 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             elif last_operation == 'swap': number_current, number_target = number_target, number_current
             elif last_operation == 'primes': number_current = _find_nearest_prime(number_current=number_current)
             elif last_operation == 'X++': number_current += 1
+            elif last_operation == "X--": number_current = max(number_current - 1, 0)
             elif last_operation == 'reverse':
                 number_current = int(str(number_current)[::-1])
             elif last_operation == 'near':
@@ -135,6 +135,17 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                 if len(last_operation) != 4: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
                 a, b = last_operation[0], last_operation[3]
                 number_current = int(str(number_current).replace(a, b))
+            elif last_operation in operations_append:
+                if len(last_operation) != 2: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
+                a = last_operation[1]
+                number_current = int(str(number_current) + a)
+                # TODO cap number length (to 999999?) because the game has a cap
+            elif last_operation in operations_prepend:
+                if len(last_operation) != 2: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
+                a = last_operation[0]
+                if a == "0": return "INVALID TREE"
+                number_current = int(a + str(number_current))
+                # TODO cap number length (to 999999?) because the game has a cap
             else:
                 warning = f"unknown operation '{last_operation}'. how did that slip through the validation of inputs?"
                 #ic(warning)
@@ -221,7 +232,7 @@ def main():
     number_target: int = 49
 
     solutions: list[tuple[float, list[str]]] = brute_force_solution(
-        buttons=buttons, number_current=number_current, number_target=number_target, max_iterations=100_000, increase_iterations=20_000, debug=True
+        buttons=buttons, number_current=number_current, number_target=number_target, max_iterations=10_000, increase_iterations=1_000, debug=True
         )
     ic(solutions)
 
