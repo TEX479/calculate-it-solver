@@ -5,14 +5,17 @@ from sympy import isprime, prevprime, nextprime # type: ignore
 
 
 digits: set[str] = {'0','1','2','3','4','5','6','7','8','9'}
-operations: set[str] = {'add','sub','mul','div','mod','sq','sqr','swap','primes','X++','reverse','near','->25','cut'}
-operations_with_argument : set[str] = {'add', 'sub', 'mul', 'div', 'mod'}
-buttons_implemented: set[str] =  digits | operations | {'='}
-button_costs_default: dict[str, float] = {'0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0,
-                                          'add': 1.1, 'sub': 1.1, 'mul': 1.1, 'div': 1.1,
-                                          'mod': 1.1, 'sq': 1.0, 'sqr': 1.0,
-                                          'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'reverse':0.9, 'near': 2.0, '->25': 1.2, 'cut': 1.0,
-                                          '=': 0}
+operations_single: set[str] = {'+','-','*','/','%','sq','sqr','swap','primes','X++','reverse','near','->25','cut'}
+operations_with_argument : set[str] = {'+', '-', '*', '/', '%'}
+operations_replace: set[str] = {f"{a}->{b}" for a in range(10) for b in range(10) if a != b}
+buttons_implemented: set[str] =  digits | operations_single | operations_replace | {'='}
+button_costs_default: dict[str, float] = {
+    '0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0,
+    '+': 1.1, '-': 1.1, '*': 1.1, '/': 1.1,
+    '%': 1.1, 'sq': 1.0, 'sqr': 1.0,
+    'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'X--': 1.0, 'reverse':0.9, 'near': 2.0, '->25': 1.2, 'cut': 1.0,
+    '=': 0
+    }
 
 invalid_branches: set[tuple[str, ...]] = set()
 
@@ -52,7 +55,7 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
     '''
 
     global digits
-    global operations
+    global operations_single
     global operations_with_argument
     global buttons_implemented
 
@@ -82,9 +85,9 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             buttons_availible.remove(action)
             continue
 
-        if action in operations:
+        if action in operations_single:
             if last_operation in operations_with_argument and number_input == '':
-                return "INVALID TREE" if action != "=" else "NOT SOLVED" # <- invalid input ("x + /" does not make sense) (but we do not want to add "add" to the invalid_trees either)
+                return "INVALID TREE" if action != "=" else "NOT SOLVED" # <- invalid input ("x + /" does not make sense) (but we do not want to add "+" to the invalid_trees either)
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
             buttons_availible.remove(action)
             if last_operation != '=':
@@ -97,42 +100,45 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
         if eval_equals or action == "=":
             if last_operation == '=' and action == '=': continue
             if last_operation in operations_with_argument and number_input == '':
-                return "INVALID TREE" if action != "=" else "NOT SOLVED" # <- invalid input ("x + /" does not make sense) (but we do not want to add "add" to the invalid_trees either)
-            match last_operation:
-                case 'add': number_current += int(number_input)
-                case 'sub': number_current = max(number_current - int(number_input), 0) # the game does not allow you to be under 0, I learned that the hard way
-                case 'mul': number_current *= int(number_input)
-                case 'div':
-                    if int(number_input) == 0: return "INVALID TREE" # <- invalid input (a // 0 is not defined)
-                    number_current = number_current // int(number_input)
-                case 'mod':
-                    if int(number_input) <= 0: return "INVALID TREE" # <- invalid input (a mod 0 is not defined)
-                    number_current = number_current % int(number_input)
+                return "INVALID TREE" if action != "=" else "NOT SOLVED" # <- invalid input ("x + /" does not make sense) (but we do not want to add "ad+d" to the invalid_trees either)
+            
+            if last_operation == '+': number_current += int(number_input)
+            elif last_operation == '-': number_current = max(number_current - int(number_input), 0) # the game does not allow you to be under 0, I learned that the hard way
+            elif last_operation == '*': number_current *= int(number_input)
+            elif last_operation == '/':
+                if int(number_input) == 0: return "INVALID TREE" # <- invalid input (a // 0 is not defined)
+                number_current = number_current // int(number_input)
+            elif last_operation == '%':
+                if int(number_input) <= 0: return "INVALID TREE" # <- invalid input (a mod 0 is not defined)
+                number_current = number_current % int(number_input)
 
-                case 'sq' : number_current = number_current * number_current
-                case 'sqr':
-                    if int(number_current) < 0: return "INVALID TREE" # <- invalid input (squareroot of negatives is not allowed)
-                    number_current = round(number_current ** 0.5)
-                case 'swap': number_current, number_target = number_target, number_current
-                case 'primes': number_current = _find_nearest_prime(number_current=number_current)
-                case 'X++': number_current += 1
-                case 'reverse':
-                    number_current = int(str(number_current)[::-1])
-                case 'near':
-                    direction = 1 if number_current < number_target else -1
-                    distance = abs(number_target - number_current) # type: ignore
-                    distance = min(distance, 10)
-                    number_current += distance * direction
-                case '->25':
-                    number_current = 25
-                case 'cut':
-                    if len(str(number_target)) < 2: return "INVALID TREE" # <- the game does not cut the first digit, if it is the only one
-                    number_target = int(str(number_target)[1:])
-                case a    : 
-                    warning = f"unknown operation '{a}'. how did that slip through the validation of inputs?"
-                    #ic(warning)
-                    raise ValueError(warning)
-                    return None # <- input not implemented
+            elif last_operation == 'sq' : number_current = number_current * number_current
+            elif last_operation == 'sqr':
+                if int(number_current) < 0: return "INVALID TREE" # <- invalid input (squareroot of negatives is not allowed)
+                number_current = round(number_current ** 0.5)
+            elif last_operation == 'swap': number_current, number_target = number_target, number_current
+            elif last_operation == 'primes': number_current = _find_nearest_prime(number_current=number_current)
+            elif last_operation == 'X++': number_current += 1
+            elif last_operation == 'reverse':
+                number_current = int(str(number_current)[::-1])
+            elif last_operation == 'near':
+                direction = 1 if number_current < number_target else -1
+                distance = abs(number_target - number_current) # type: ignore
+                distance = min(distance, 10)
+                number_current += distance * direction
+            elif last_operation == '->25':
+                number_current = 25
+            elif last_operation == 'cut':
+                if len(str(number_target)) < 2: return "INVALID TREE" # <- the game does not cut the first digit, if it is the only one
+                number_target = int(str(number_target)[1:])
+            elif last_operation in operations_replace:
+                if len(last_operation) != 4: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
+                a, b = last_operation[0], last_operation[3]
+                number_current = int(str(number_current).replace(a, b))
+            else:
+                warning = f"unknown operation '{last_operation}'. how did that slip through the validation of inputs?"
+                #ic(warning)
+                raise ValueError(warning)
             
             if number_current != number_last: number_last = number_current
             elif action == "=": pass
@@ -210,7 +216,7 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
     return solutions
 
 def main():
-    buttons: list[str] = [str(i) for i in range(10)] * 2 + ['add', 'sub', 'mul', 'div'] * 2 #+ ['add', 'sub', 'div']
+    buttons: list[str] = [str(i) for i in range(10)] * 2 + ['+', '-', '*', '/'] * 2 #+ ['+', '-', '/']
     number_current: int = 7
     number_target: int = 49
 
