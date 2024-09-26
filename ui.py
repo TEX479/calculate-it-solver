@@ -115,7 +115,7 @@ class GUI():
         for i, operation in [(0, "+"), (1, "-"), (2, "*"), (3, "/")]:
             button = tkinter.Button(
                 master=self.frame_basic_buttons, text=f"{operation}: {self.btns_actions_ammounts[operation]}", foreground=fg, background=bg,
-                command=(lambda: self.handle_button(operation))
+                command=(lambda operation=operation: self.handle_button(operation))
             )
             button.grid(row=i, column=3)
             placed_operations.add(operation)
@@ -129,7 +129,7 @@ class GUI():
         for operation in operations_list:
             button = tkinter.Button(
                 master=self.frame_basic_buttons, text=f"{operation}: {self.btns_actions_ammounts[operation]}", foreground=fg, background=bg,
-                command=(lambda: self.handle_button(operation))
+                command=(lambda operation=operation: self.handle_button(operation))
             )
             button.grid(row=(i // 4), column=(i % 4))
             self.buttons[operation] = button
