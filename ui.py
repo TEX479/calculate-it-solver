@@ -61,13 +61,13 @@ class GUI():
 
         self.lbl_iters = tkinter.Label(master=self.frame_control, foreground=fg, background=bg, text="iterations:")
         self.lbl_iters.grid(row=0, column=4, padx=5)
-        self.iters_tvar = tkinter.Variable(master=self.mw, value="10_000")
+        self.iters_tvar = tkinter.Variable(master=self.mw, value="100_000")
         self.entry_iters = tkinter.Entry(master=self.frame_control, foreground=fg, background=bg, textvariable=self.iters_tvar)
         self.entry_iters.grid(row=0, column=5)
 
         self.lbl_inc_iters = tkinter.Label(master=self.frame_control, foreground=fg, background=bg, text="increase iterations:")
         self.lbl_inc_iters.grid(row=1, column=4, padx=5)
-        self.inc_iters_tvar = tkinter.Variable(master=self.mw, value="1_000")
+        self.inc_iters_tvar = tkinter.Variable(master=self.mw, value="0")
         self.entry_inc_iters = tkinter.Entry(master=self.frame_control, foreground=fg, background=bg, textvariable=self.inc_iters_tvar)
         self.entry_inc_iters.grid(row=1, column=5)        
 
@@ -115,7 +115,7 @@ class GUI():
         for i, operation in [(0, "+"), (1, "-"), (2, "*"), (3, "/")]:
             button = tkinter.Button(
                 master=self.frame_basic_buttons, text=f"{operation}: {self.btns_actions_ammounts[operation]}", foreground=fg, background=bg,
-                command=(lambda: self.handle_button(operation))
+                command=(lambda operation=operation: self.handle_button(operation))
             )
             button.grid(row=i, column=3)
             placed_operations.add(operation)
@@ -129,7 +129,7 @@ class GUI():
         for operation in operations_list:
             button = tkinter.Button(
                 master=self.frame_basic_buttons, text=f"{operation}: {self.btns_actions_ammounts[operation]}", foreground=fg, background=bg,
-                command=(lambda: self.handle_button(operation))
+                command=(lambda operation=operation: self.handle_button(operation))
             )
             button.grid(row=(i // 4), column=(i % 4))
             self.buttons[operation] = button
