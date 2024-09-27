@@ -187,8 +187,8 @@ class GUI():
 
     def handle_button(self, button_name:str) -> None:
         #print(f"pressed '{button_name}'")
-        if   self._ctrl_direction == "ADD": self.btns_actions_ammounts[button_name] += 1
-        elif self._ctrl_direction == "SUB": self.btns_actions_ammounts[button_name] -= 1
+        if   self._ctrl_direction == "ADD": self.btns_actions_ammounts[button_name] = max(0, self.btns_actions_ammounts[button_name] + 1)
+        elif self._ctrl_direction == "SUB": self.btns_actions_ammounts[button_name] = max(0, self.btns_actions_ammounts[button_name] - 1)
         else: raise ValueError(f"self._ctrl_direction can only be 'ADD' or 'SUB', not '{self._ctrl_direction}'")
 
         self.buttons[button_name].configure(text=f"{button_name}: {self.btns_actions_ammounts[button_name]}")

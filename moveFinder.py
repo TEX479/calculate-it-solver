@@ -200,7 +200,7 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
             continue
         elif solved == "SOLVED":
             solutions_ammount += 1
-            solutions.append((cost, button_sequence))
+            solutions.append((round(cost, 2), button_sequence))
             continue
         else:
             if solved != "NOT SOLVED":
@@ -213,6 +213,8 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
             branches_new.append((cost_new, button_sequence + [button]))
         
         branches += branches_new
+    
+    if debug: print()
     
     return solutions
 
