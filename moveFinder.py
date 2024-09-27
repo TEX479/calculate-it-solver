@@ -3,18 +3,19 @@ from icecream import ic # type: ignore
 from sympy import isprime, prevprime, nextprime # type: ignore
 
 
-digits: set[str] = {'0','1','2','3','4','5','6','7','8','9'}
-operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','->25','cut'}
+digits: set[str] = {'0','1','2','3','4','5','6','7','8','9','10'}
+operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','->25','cut','X+10','X-10'}
 operations_with_argument : set[str] = {'+', '-', '*', '/', '%'}
 operations_replace: set[str] = {f"{a}->{b}" for a in range(10) for b in range(10) if a != b}
 operations_append: set[str] = {f"X{a}" for a in range(10)}
 operations_prepend: set[str] = {f"{a}X" for a in range(1, 10)}
 buttons_implemented: set[str] =  digits | operations_simple | operations_with_argument | operations_replace | operations_append | operations_prepend | {'='}
 button_costs_default: dict[str, float] = {
-    '0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0,
+    '0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0, '10': 1.0,
     '+': 1.1, '-': 1.1, '*': 1.1, '/': 1.1,
     '%': 1.1, 'sq': 1.0, 'sqr': 1.0,
     'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'X--': 1.0, 'reverse':0.9, 'near': 2.0, '->25': 1.2, 'cut': 1.0,
+    'X+10': 1.0, 'X-10': 1.0,
     '=': 0
     }
 for name in operations_append | operations_prepend | operations_replace:
@@ -130,6 +131,10 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             elif last_operation == 'cut':
                 if len(str(number_target)) < 2: return (cost, "INVALID") # <- the game does not cut the first digit, if it is the only one
                 number_target = int(str(number_target)[1:])
+            elif last_operation == 'X+10':
+                number_current += 10
+            elif last_operation == 'X-10':
+                number_current -= 10
             elif last_operation in operations_replace:
                 if len(last_operation) != 4: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
                 a, b = last_operation[0], last_operation[3]

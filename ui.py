@@ -107,10 +107,14 @@ class GUI():
             column = 1 if i == 0 else ((i-1) % 3)
             button.grid(row=row, column=column)
             self.buttons[f"{i}"] = button
-        
+        button = tkinter.Button(
+            master=self.frame_basic_buttons, text=f"{10}: {self.btns_actions_ammounts['10']}", foreground=fg, background=bg,
+            command=(lambda: self.handle_button("10"))
+        )
+        button.grid(row=3, column=2)
+
         # operations
         placed_operations: set[str] = set()
-
         # simple operations
         for i, operation in [(0, "+"), (1, "-"), (2, "*"), (3, "/")]:
             button = tkinter.Button(
