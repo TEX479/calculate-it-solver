@@ -73,6 +73,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
         eval_equals: bool = False
         last_operation_buffer: str = ''
 
+        number_current = max(0, min(number_current, 999999))
+
         if cost_maximum != None and cost >= cost_maximum: return (cost, "NOT SOLVED") # costs too much
     
         if action in digits:
