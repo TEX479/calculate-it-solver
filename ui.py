@@ -147,17 +147,16 @@ class GUI():
             i += 1
 
         # replaces
-        for ia in range(10):
-            for ib in range(10):
-                if ia == ib:
-                    continue
-                name = f"{ia}->{ib}"
-                button = tkinter.Button(
-                    master=self.frame_replacement_buttons, text=f"{name}: {self.btns_actions_ammounts[name]}", foreground=fg, background=bg,
-                    command=(lambda name=name: self.handle_button(name))
-                )
-                button.grid(row=ia, column=ib)
-                self.buttons[name] = button
+        _replaces_in_game = ['2->4', '4->7', '7->3', '3->0', '0->8', '8->9', '9->1', '1->5', '5->6', '6->2']
+        i = 0
+        for name in _replaces_in_game:
+            button = tkinter.Button(
+                master=self.frame_replacement_buttons, text=f"{name}: {self.btns_actions_ammounts[name]}", foreground=fg, background=bg,
+                command=(lambda name=name: self.handle_button(name))
+            )
+            button.grid(row=i, column=0)
+            self.buttons[name] = button
+            i += 1
         
         # prepend
         for i in range(1, 10):
