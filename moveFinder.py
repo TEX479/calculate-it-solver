@@ -4,7 +4,7 @@ from sympy import isprime, prevprime, nextprime # type: ignore
 
 
 digits: set[str] = {'0','1','2','3','4','5','6','7','8','9','10'}
-operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10'}
+operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10','coins'}
 operations_with_argument : set[str] = {'+', '-', '*', '/', '%'}
 operations_replace: set[str] = {f"{a}->{b}" for a in range(10) for b in range(10) if a != b}
 operations_append: set[str] = {f"X{a}" for a in range(10)}
@@ -15,7 +15,7 @@ button_costs_default: dict[str, float] = {
     '+': 1.1, '-': 1.1, '*': 1.1, '/': 1.1,
     '%': 1.1, 'sq': 1.0, 'sqr': 1.0,
     'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'X--': 1.0, 'reverse':0.9, 'near': 2.0, 'X->25': 1.2, 'X->0': 1.2, 'cut': 1.0,
-    'X+10': 1.0, 'X-10': 1.0,
+    'X+10': 1.0, 'X-10': 1.0, 'coins':1.0,
     '=': 0
     }
 for name in operations_append | operations_prepend | operations_replace:
@@ -139,6 +139,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                 number_current += 10
             elif last_operation == 'X-10':
                 number_current -= 10
+            elif last_operation == 'coins':
+                number_current += coins
             elif last_operation in operations_replace:
                 if len(last_operation) != 4: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
                 a, b = last_operation[0], last_operation[3]

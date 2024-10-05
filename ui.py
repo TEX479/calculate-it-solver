@@ -59,17 +59,23 @@ class GUI():
         self.entry_num_tar = tkinter.Entry(master=self.frame_control, foreground=fg, background=bg, textvariable=self.num_tar_tvar)
         self.entry_num_tar.grid(row=0, column=3)
 
+        self.lbl_coins = tkinter.Label(master=self.frame_control, foreground=fg, background=bg, text="coins:")
+        self.lbl_coins.grid(row=0, column=4, padx=5)
+        self.coins_tvar = tkinter.Variable(master=self.mw, value="0")
+        self.entry_coins= tkinter.Entry(master=self.frame_control, foreground=fg, background=bg, textvariable=self.coins_tvar)
+        self.entry_coins.grid(row=0, column=5)
+
         self.lbl_iters = tkinter.Label(master=self.frame_control, foreground=fg, background=bg, text="iterations:")
-        self.lbl_iters.grid(row=0, column=4, padx=5)
+        self.lbl_iters.grid(row=0, column=6, padx=5)
         self.iters_tvar = tkinter.Variable(master=self.mw, value="10_000")
         self.entry_iters = tkinter.Entry(master=self.frame_control, foreground=fg, background=bg, textvariable=self.iters_tvar)
-        self.entry_iters.grid(row=0, column=5)
+        self.entry_iters.grid(row=0, column=7)
 
         self.lbl_inc_iters = tkinter.Label(master=self.frame_control, foreground=fg, background=bg, text="increase iterations:")
-        self.lbl_inc_iters.grid(row=1, column=4, padx=5)
+        self.lbl_inc_iters.grid(row=1, column=6, padx=5)
         self.inc_iters_tvar = tkinter.Variable(master=self.mw, value="0")
         self.entry_inc_iters = tkinter.Entry(master=self.frame_control, foreground=fg, background=bg, textvariable=self.inc_iters_tvar)
-        self.entry_inc_iters.grid(row=1, column=5)        
+        self.entry_inc_iters.grid(row=1, column=7)        
 
         """
         ui-elements for controlling the calculator
@@ -210,6 +216,8 @@ class GUI():
         number_current = int(number_current)
         number_target = str(self.num_tar_tvar.get()) # type: ignore
         number_target = int(number_target)
+        coins = str(self.coins_tvar.get()) # type: ignore
+        coins = int(coins)
         max_turns = str(self.iters_tvar.get()) # type: ignore
         max_turns = None if max_turns == "" else int(max_turns)
         iterations = str(self.iters_tvar.get()) # type: ignore
@@ -219,7 +227,7 @@ class GUI():
         debug = bool(self.debug_tvar.get())
 
         solutions = moveFinder.brute_force_solution(
-            buttons=buttons.copy(), number_current=number_current, number_target=number_target,
+            buttons=buttons.copy(), number_current=number_current, number_target=number_target, coins=coins,
             max_iterations=iterations, increase_iterations=inc_iterations, debug=debug
         )
         solutions = reversed(sorted(solutions, key=lambda x: x[0]))
