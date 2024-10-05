@@ -190,40 +190,44 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
     
     iterations = 0
     solutions_ammount = 0
+    try:
+        while (iterations < max_iterations) and branches != []:
+            iterations += 1
 
-    while (iterations < max_iterations) and branches != []:
-        iterations += 1
+            if debug: print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}} | len(branches): {len(branches):>06}", end="")
 
-        if debug: print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}} | len(branches): {len(branches):>06}", end="")
+            if (iterations % 5000) == 0:
+                branches = sorted(branches, key=lambda x: x[0])
+            _cost_current, button_sequence = branches[0]
+            branches.pop(0)
 
-        if (iterations % 5000) == 0:
-            branches = sorted(branches, key=lambda x: x[0])
-        _cost_current, button_sequence = branches[0]
-        branches.pop(0)
+            #local_buttons_availible = get_local_buttons_availible(buttons_availible=buttons, buttons_used=button_sequence)
+            cost, solved = check_button_sequence(
+                button_sequence=button_sequence.copy(), buttons_availible=buttons.copy(), number_current=number_current, number_target=number_target,
+                coins=coins
+            )
 
-        #local_buttons_availible = get_local_buttons_availible(buttons_availible=buttons, buttons_used=button_sequence)
-        cost, solved = check_button_sequence(
-            button_sequence=button_sequence.copy(), buttons_availible=buttons.copy(), number_current=number_current, number_target=number_target,
-            coins=coins
-        )
-
-        if solved == "INVALID":
-            continue
-        elif solved == "SOLVED":
-            solutions_ammount += 1
-            solutions.append((round(cost, 2), button_sequence))
-            continue
-        else:
-            if solved != "NOT SOLVED":
-                raise ValueError(f"How does the button sequence not resolve to either 'SOLVED', 'NOT SOLVED' or 'INVALID' but instead '{solved}'")
-        
-        branches_new: list[tuple[float, list[str]]] = []
-        local_buttons_availible = get_local_buttons_availible(buttons_availible=buttons, buttons_used=button_sequence)
-        for button in set(local_buttons_availible):
-            cost_new = cost + _calculate_cost(buttons_availible=local_buttons_availible, action=button)
-            branches_new.append((cost_new, button_sequence + [button]))
-        
-        branches += branches_new
+            if solved == "INVALID":
+                continue
+            elif solved == "SOLVED":
+                solutions_ammount += 1
+                solutions.append((round(cost, 2), button_sequence))
+                continue
+            else:
+                if solved != "NOT SOLVED":
+                    raise ValueError(f"How does the button sequence not resolve to either 'SOLVED', 'NOT SOLVED' or 'INVALID' but instead '{solved}'")
+            
+            branches_new: list[tuple[float, list[str]]] = []
+            local_buttons_availible = get_local_buttons_availible(buttons_availible=buttons, buttons_used=button_sequence)
+            for button in set(local_buttons_availible):
+                cost_new = cost + _calculate_cost(buttons_availible=local_buttons_availible, action=button)
+                branches_new.append((cost_new, button_sequence + [button]))
+            
+            branches += branches_new
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        raise e
     
     if debug: print()
     
