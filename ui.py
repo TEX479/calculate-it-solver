@@ -65,6 +65,12 @@ class GUI():
         self.entry_coins= tkinter.Entry(master=self.frame_control, foreground=fg, background=bg, textvariable=self.coins_tvar)
         self.entry_coins.grid(row=0, column=5)
 
+        self.lbl_last = tkinter.Label(master=self.frame_control, foreground=fg, background=bg, text="last:")
+        self.lbl_last.grid(row=1, column=4, padx=5)
+        self.last_tvar = tkinter.Variable(master=self.mw, value="")
+        self.entry_last= tkinter.Entry(master=self.frame_control, foreground=fg, background=bg, textvariable=self.last_tvar)
+        self.entry_last.grid(row=1, column=5)
+
         self.lbl_iters = tkinter.Label(master=self.frame_control, foreground=fg, background=bg, text="iterations:")
         self.lbl_iters.grid(row=0, column=6, padx=5)
         self.iters_tvar = tkinter.Variable(master=self.mw, value="10_000")
@@ -217,16 +223,18 @@ class GUI():
         number_target = int(number_target)
         coins = str(self.coins_tvar.get()) # type: ignore
         coins = int(coins)
+        last = str(self.last_tvar.get()) # type: ignore
+        last = int(last) if last.isdecimal() else None
         max_turns = str(self.iters_tvar.get()) # type: ignore
         max_turns = None if max_turns == "" else int(max_turns)
         iterations = str(self.iters_tvar.get()) # type: ignore
         iterations = int(iterations)
         inc_iterations = str(self.inc_iters_tvar.get()) # type: ignore
         inc_iterations = int(inc_iterations)
-        debug = bool(self.debug_tvar.get())
+        debug = bool(self.debug_tvar.get()) # type: ignore
 
         solutions = moveFinder.brute_force_solution(
-            buttons=buttons.copy(), number_current=number_current, number_target=number_target, coins=coins,
+            buttons=buttons.copy(), number_current=number_current, number_target=number_target, coins=coins, last=last,
             max_iterations=iterations, increase_iterations=inc_iterations, debug=debug
         )
         solutions = reversed(sorted(solutions, key=lambda x: x[0]))

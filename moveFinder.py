@@ -4,7 +4,7 @@ from sympy import isprime, prevprime, nextprime # type: ignore
 
 
 digits: set[str] = {'0','1','2','3','4','5','6','7','8','9','10'}
-operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10','coins'}
+operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10','coins','last'}
 operations_with_argument : set[str] = {'+', '-', '*', '/', '%'}
 operations_replace: set[str] = {f"{a}->{b}" for a in range(10) for b in range(10) if a != b}
 operations_append: set[str] = {f"X{a}" for a in range(10)}
@@ -15,7 +15,7 @@ button_costs_default: dict[str, float] = {
     '+': 1.1, '-': 1.1, '*': 1.1, '/': 1.1,
     '%': 1.1, 'sq': 1.0, 'sqr': 1.0,
     'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'X--': 1.0, 'reverse':0.9, 'near': 2.0, 'X->25': 1.2, 'X->0': 1.2, 'cut': 1.0,
-    'X+10': 1.0, 'X-10': 1.0, 'coins':1.0,
+    'X+10': 1.0, 'X-10': 1.0, 'coins': 1.0, 'last': 1.0,
     '=': 0
     }
 for name in operations_append | operations_prepend | operations_replace:
@@ -53,7 +53,7 @@ def _calculate_cost(buttons_availible:list[str], action:str) -> float:
     global button_costs_default
     return _cost_multiplier_by_ammount(buttons_availible.count(action)) * button_costs_default[action]
 
-def check_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, number_target:int, coins:int=0, cost_maximum:float|None=None) -> tuple[float, Literal["SOLVED"] | Literal["NOT SOLVED"] | Literal["INVALID"]]:
+def check_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, number_target:int, coins:int=0, last:int|None=None, cost_maximum:float|None=None) -> tuple[float, Literal["SOLVED"] | Literal["NOT SOLVED"] | Literal["INVALID"]]:
     '''
     this function modifies the lists it gets, so give it a copy not the original list
     '''
@@ -103,15 +103,15 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             if last_operation in operations_with_argument and number_input == '':
                 return (cost, "INVALID") if action != "=" else (cost, "NOT SOLVED") # <- invalid input ("x + /" does not make sense) (but we do not want to add "ad+d" to the invalid_trees either)
             
-            if last_operation == '+': number_current += int(number_input)
-            elif last_operation == '-': number_current = max(number_current - int(number_input), 0) # the game does not allow you to be under 0, I learned that the hard way
-            elif last_operation == '*': number_current *= int(number_input)
+            if last_operation == '+': number_current += int(number_input) # type: ignore
+            elif last_operation == '-': number_current = max(number_current - int(number_input), 0) # type: ignore # the game does not allow you to be under 0, I learned that the hard way
+            elif last_operation == '*': number_current *= int(number_input) # type: ignore
             elif last_operation == '/':
                 if int(number_input) == 0: return (cost, "INVALID") # <- invalid input (a // 0 is not defined)
-                number_current = number_current // int(number_input)
+                number_current = number_current // int(number_input) # type: ignore
             elif last_operation == '%':
                 if int(number_input) <= 0: return (cost, "INVALID") # <- invalid input (a mod 0 is not defined)
-                number_current = number_current % int(number_input)
+                number_current = number_current % int(number_input) # type: ignore
 
             elif last_operation == 'sq' : number_current = number_current * number_current
             elif last_operation == 'sqr':
@@ -141,6 +141,9 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                 number_current -= 10
             elif last_operation == 'coins':
                 number_current += coins
+            elif last_operation == 'last':
+                if last == None: return (cost, "INVALID") # <- can not use "last" if there is no number provided
+                number_current = last
             elif last_operation in operations_replace:
                 if len(last_operation) != 4: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
                 a, b = last_operation[0], last_operation[3]
@@ -181,7 +184,7 @@ def get_local_buttons_availible(buttons_availible:list[str], buttons_used:list[s
             batr.remove(button)
     return batr
 
-def brute_force_solution(buttons:list[str], number_current:int, number_target:int, coins:int=0, max_iterations:int=100_000, increase_iterations:int=20_000, debug:bool=False) -> list[tuple[float, list[str]]]:
+def brute_force_solution(buttons:list[str], number_current:int, number_target:int, coins:int=0, last:int|None=None, max_iterations:int=100_000, increase_iterations:int=20_000, debug:bool=False) -> list[tuple[float, list[str]]]:
     branches: list[tuple[float, list[str]]] = [(0.0, [])]
     solutions: list[tuple[float, list[str]]] = []
 
@@ -204,7 +207,7 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
             #local_buttons_availible = get_local_buttons_availible(buttons_availible=buttons, buttons_used=button_sequence)
             cost, solved = check_button_sequence(
                 button_sequence=button_sequence.copy(), buttons_availible=buttons.copy(), number_current=number_current, number_target=number_target,
-                coins=coins
+                coins=coins, last=last
             )
 
             if solved == "INVALID":
