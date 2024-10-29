@@ -7,9 +7,14 @@ digits: set[str] = {'0','1','2','3','4','5','6','7','8','9','10'}
 operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10','coins','last'}
 operations_with_argument : set[str] = {'+', '-', '*', '/', '%'}
 operations_replace: set[str] = {f"{a}->{b}" for a in range(10) for b in range(10) if a != b}
+operations_replace_in_game: list[str] = ['2->4', '4->7', '7->3', '3->0', '0->8', '8->9', '9->1', '1->5', '5->6', '6->2']
 operations_append: set[str] = {f"X{a}" for a in range(10)}
 operations_prepend: set[str] = {f"{a}X" for a in range(1, 10)}
-buttons_implemented: set[str] =  digits | operations_simple | operations_with_argument | operations_replace | operations_append | operations_prepend | {'='}
+operations_append_in_game: set[str] = {'X1', 'X2', 'X4', 'X7', 'X9'}
+operations_prepend_in_game = {'3X', '4X', '5X', '6X', '8X'}
+buttons_implemented: set[str] = digits | operations_simple | operations_with_argument | operations_replace | operations_append | operations_prepend | {'='}
+buttons_in_game: set[str] = (digits | operations_simple | operations_with_argument | set(operations_replace_in_game)
+                             | operations_append_in_game | operations_prepend_in_game | {'='})
 button_costs_default: dict[str, float] = {
     '0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0, '10': 1.0,
     '+': 1.1, '-': 1.1, '*': 1.1, '/': 1.1,
