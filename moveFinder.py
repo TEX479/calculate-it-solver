@@ -182,6 +182,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             continue
 
         return (cost, "INVALID") # <- invalid input
+    
+    number_current = max(0, min(number_current, 999999))
 
     if number_current != number_target: return (cost, "NOT SOLVED")
     return (cost, "SOLVED")
