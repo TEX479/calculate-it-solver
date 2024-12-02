@@ -15,7 +15,7 @@ DISCLAIMER: I am just a dude who doesn't know what he's doing. I don't take any 
 All good? You still want to do this?\
 \
 \
-Ok so first you'll have to install python. I'd reccomend visiting their official website ([https://www.python.org/](https://www.python.org/)), they got instructions on how to do that over there. I am using python 3.11, you can use newer versions too. Older versions might also work as I will neither deliberately test and fix this program for older versions, nor will I intentionally break it for them. (I just don't bother testing other versions, because why would I?)\
+Ok so first you'll have to install python. I'd reccomend visiting their official website ([python.org](https://www.python.org/)), they got instructions on how to do that over there. I am using python 3.11, you can use newer versions too. Older versions might also work as I will neither deliberately test and fix this program for older versions, nor will I intentionally break it for them. (I just don't bother testing other versions, because why would I?)\
 \
 Next you'll want to download this project. If you have git installed, `git clone https://github.com/TEX479/calculate-it-solver.git` should do the trick. If you have no idea what that last sentence even meant, you can also just download this project [here](https://github.com/TEX479/calculate-it-solver/archive/refs/heads/main.zip)\
 \
