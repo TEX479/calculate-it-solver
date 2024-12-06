@@ -56,7 +56,8 @@ def _cost_multiplier_by_ammount(ammount:int) -> float:
 
 def _calculate_cost(buttons_availible:list[str], action:str) -> float:
     global button_costs_default
-    return _cost_multiplier_by_ammount(buttons_availible.count(action)) * button_costs_default[action]
+    cost = _cost_multiplier_by_ammount(buttons_availible.count(action)) * button_costs_default[action]
+    return max(cost, 0)
 
 def check_button_sequence(button_sequence:list[str], buttons_availible:list[str], number_current:int, number_target:int, coins:int=0, last:int|None=None, cost_maximum:float|None=None) -> tuple[float, Literal["SOLVED"] | Literal["NOT SOLVED"] | Literal["INVALID"]]:
     '''
