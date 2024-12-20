@@ -27,6 +27,9 @@ class GUI():
         self.frame_buttons = tkinter.Frame(self.mw, background=BACKGROUND)
         self.frame_buttons.grid(row=1, column=0, padx=5, pady=5)
 
+        self.frame_manual_input = tkinter.Frame(master=self.frame_buttons, background=BACKGROUND)
+        self.frame_manual_input.grid(row=0, column=3, padx=5, pady=5)
+
         self.frame_basic_buttons = tkinter.Frame(master=self.frame_buttons, background=BACKGROUND)
         self.frame_basic_buttons.grid(row=0, column=0, padx=5, pady=5)
         
@@ -127,8 +130,10 @@ class GUI():
         button.grid(row=3, column=2)
         self.buttons["10"] = button
 
+        
         # operations
         placed_operations: set[str] = set()
+        '''
         # simple operations
         for i, operation in [(0, "+"), (1, "-"), (2, "*"), (3, "/")]:
             button = tkinter.Button(
@@ -138,6 +143,7 @@ class GUI():
             button.grid(row=i, column=3)
             placed_operations.add(operation)
             self.buttons[operation] = button
+        '''
         
         # advanced operations
         # might require custom structure, like "{'%', 'sq', 'sqr', 'primes', 'X++', 'X--', 'swap', 'reverse', 'near', ...}"
@@ -187,6 +193,10 @@ class GUI():
             if i == 0: button.grid(row=3, column=1)
             else:      button.grid(row=((i-1) // 3), column=((i-1) % 3))
             self.buttons[name] = button
+        
+        # custom buttons
+        self.text_manual_input = tkinter.Text(master=self.frame_manual_input, background=BACKGROUND, foreground=FOREGROUND)
+        self.text_manual_input.pack()
 
         '''
         ui-stuff for showing solutions
@@ -219,6 +229,25 @@ class GUI():
             if (ub:=self.btns_actions_ammounts[name]) <= 0: continue
             for _i in range(ub):
                 buttons.append(name)
+        
+        manual_input = self.text_manual_input.get("1.0", tkinter.END)
+        # if we don't bind button_name here, it may be unbound after the loop (will not happen, because "buttons_implemented" is not empty, but just in case)
+        button_name = "->"
+        for line in manual_input.split("\n"):
+            matched_button: None|str = None
+            for button_name in moveFinder.buttons_implemented:
+                if line[:len(button_name)] == button_name:
+                    matched_button = button_name
+                    break
+            if matched_button == None: continue
+            if matched_button.count(" ") < line.count(" "):
+                line_rest = " ".join(line.split(" ")[matched_button.count(" ")+1:])
+                ammount = eval(line_rest)
+                if type(ammount) != int: continue
+            else:
+                ammount = 1
+            buttons += [button_name] * ammount
+
         
         number_current = str(self.num_curr_tvar.get()) # type: ignore
         number_current = int(number_current)

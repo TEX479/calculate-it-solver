@@ -3,8 +3,8 @@ from icecream import ic # type: ignore
 from sympy import isprime, prevprime, nextprime # type: ignore
 
 
-digits: set[str] = {'0','1','2','3','4','5','6','7','8','9','10'}
-operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10','coins','last'}
+digits: set[str] = {str(i) for i in range(100)}
+operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10','coins','last','100-X'}
 operations_with_argument : set[str] = {'+', '-', '*', '/', '%'}
 operations_replace: set[str] = {f"{a}->{b}" for a in range(10) for b in range(10) if a != b}
 operations_replace_in_game: list[str] = ['2->4', '4->7', '7->3', '3->0', '0->8', '8->9', '9->1', '1->5', '5->6', '6->2']
@@ -150,6 +150,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             elif last_operation == 'last':
                 if last == None: return (cost, "INVALID") # <- can not use "last" if there is no number provided
                 number_current = last
+            elif last_operation == '100-X':
+                number_current = max(0, 100-number_current)
             elif last_operation in operations_replace:
                 if len(last_operation) != 4: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
                 a, b = last_operation[0], last_operation[3]
