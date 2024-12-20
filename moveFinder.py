@@ -20,7 +20,7 @@ button_costs_default: dict[str, float] = {
     '+': 1.1, '-': 1.1, '*': 1.1, '/': 1.1,
     '%': 1.1, 'sq': 1.0, 'sqr': 1.0,
     'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'X--': 1.0, 'reverse':0.9, 'near': 2.0, 'X->25': 1.2, 'X->0': 1.2, 'cut': 1.0,
-    'X+10': 1.0, 'X-10': 1.0, 'coins': 1.0, 'last': 1.0,
+    'X+10': 1.0, 'X-10': 1.0, 'coins': 1.0, 'last': 1.0, '100-X':1.0,
     '=': 0
     }
 for name in operations_append | operations_prepend | operations_replace:
