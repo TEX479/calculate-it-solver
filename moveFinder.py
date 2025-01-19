@@ -16,15 +16,17 @@ buttons_implemented: set[str] = digits | operations_simple | operations_with_arg
 buttons_in_game: set[str] = (digits | operations_simple | operations_with_argument | set(operations_replace_in_game)
                              | operations_append_in_game | operations_prepend_in_game | {'='})
 button_costs_default: dict[str, float] = {
-    '0': 1.0, '1': 1.0, '2': 1.0, '3': 1.0, '4': 1.0, '5': 1.0, '6': 1.0, '7': 1.0, '8': 1.0, '9': 1.0, '10': 1.0,
-    '+': 1.1, '-': 1.1, '*': 1.1, '/': 1.1,
-    '%': 1.1, 'sq': 1.0, 'sqr': 1.0,
+    'sq': 1.0, 'sqr': 1.0,
     'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'X--': 1.0, 'reverse':0.9, 'near': 2.0, 'X->25': 1.2, 'X->0': 1.2, 'cut': 1.0,
     'X+10': 1.0, 'X-10': 1.0, 'coins': 1.0, 'last': 1.0, '100-X':1.0,
     '=': 0
     }
+for digit in digits:
+    button_costs_default[digit] = 0.8 if len(digit) == 1 else 0.7
+for binary_operand in operations_simple:
+    button_costs_default[binary_operand] = 1.2
 for name in operations_append | operations_prepend | operations_replace:
-    button_costs_default[name] = 0.9
+    button_costs_default[name] = 0.75
 
 invalid_branches: set[tuple[str, ...]] = set()
 
