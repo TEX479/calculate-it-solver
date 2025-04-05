@@ -4,7 +4,7 @@ from sympy import isprime, prevprime, nextprime # type: ignore
 
 
 digits: set[str] = {str(i) for i in range(100)}
-operations_simple: set[str] = {'sq','sqr','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10','coins','last','100-X'}
+operations_simple: set[str] = {'sq','sqrt','swap','primes','X++','X--','reverse','near','X->25','X->0','cut','X+10','X-10','coins','last','100-X'}
 operations_with_argument : set[str] = {'+', '-', '*', '/', '%'}
 operations_replace: set[str] = {f"{a}->{b}" for a in range(10) for b in range(10) if a != b}
 operations_replace_in_game: list[str] = ['2->4', '4->7', '7->3', '3->0', '0->8', '8->9', '9->1', '1->5', '5->6', '6->2']
@@ -16,7 +16,7 @@ buttons_implemented: set[str] = digits | operations_simple | operations_with_arg
 buttons_in_game: set[str] = (digits | operations_simple | operations_with_argument | set(operations_replace_in_game)
                              | operations_append_in_game | operations_prepend_in_game | {'='})
 button_costs_default: dict[str, float] = {
-    'sq': 1.0, 'sqr': 1.0,
+    'sq': 1.0, 'sqrt': 1.0,
     'swap': 0.8, 'primes': 0.8, 'X++': 1.0, 'X--': 1.0, 'reverse':0.9, 'near': 2.0, 'X->25': 1.2, 'X->0': 1.2, 'cut': 1.0,
     'X+10': 1.0, 'X-10': 1.0, 'coins': 1.0, 'last': 1.0, '100-X':1.0,
     '=': 0
@@ -37,7 +37,7 @@ def _find_nearest_prime(number_current: int) -> int:
     if number_current <= 2: return 2
     
     lower = prevprime(number_current)
-    upper = nextprime(number_current)
+    upper = nextprime(number_current) # type: ignore
     
     if not isinstance(lower, int) or not isinstance(upper, int):
         raise TypeError(f"'prevprime()' or 'nextprime()' did not return an int. this is a reminder that you should not copy code from chargpt.")
@@ -122,7 +122,7 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                 number_current = number_current % int(number_input) # type: ignore
 
             elif last_operation == 'sq' : number_current = number_current * number_current
-            elif last_operation == 'sqr':
+            elif last_operation == 'sqrt':
                 if int(number_current) < 0: return (cost, "INVALID") # <- invalid input (squareroot of negatives is not allowed)
                 number_current = round(number_current ** 0.5)
             elif last_operation == 'swap': number_current, number_target = number_target, number_current

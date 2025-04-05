@@ -146,7 +146,7 @@ class GUI():
         '''
         
         # advanced operations
-        # might require custom structure, like "{'%', 'sq', 'sqr', 'primes', 'X++', 'X--', 'swap', 'reverse', 'near', ...}"
+        # might require custom structure, like "{'%', 'sq', 'sqrt', 'primes', 'X++', 'X--', 'swap', 'reverse', 'near', ...}"
         operations = (moveFinder.operations_simple | moveFinder.operations_with_argument) ^ placed_operations
         operations_list = sorted(list(operations))
         i = 4*4
