@@ -36,13 +36,14 @@ invalid_branches: set[tuple[str, ...]] = set()
 def _find_nearest_prime(number_current: int) -> int:
     if isprime(number_current):
         return number_current
-    if number_current <= 2: return 2
+    if number_current <= 2:
+        return 2
     
     lower = prevprime(number_current)
     upper = nextprime(number_current) # type: ignore
     
     if not isinstance(lower, int) or not isinstance(upper, int):
-        raise TypeError(f"'prevprime()' or 'nextprime()' did not return an int. this is a reminder that you should not copy code from chargpt.")
+        raise TypeError("'prevprime()' or 'nextprime()' did not return an int. this is a reminder that you should not copy code from chargpt.")
     
     # Return the closest prime
     if abs(lower - number_current) <= abs(upper - number_current):
@@ -51,14 +52,20 @@ def _find_nearest_prime(number_current: int) -> int:
         return upper
 
 def _cost_multiplier_by_ammount(ammount:int) -> float:
-    if ammount <= 1: return 4.0
-    if ammount <= 2: return 1.2
-    if ammount <= 3: return 1.0
-    if ammount <= 5: return 0.8
-    if ammount > 20: return 0.2
+    if ammount <= 1:
+        return 4.0
+    if ammount <= 2:
+        return 1.2
+    if ammount <= 3:
+        return 1.0
+    if ammount <= 5:
+        return 0.8
+    if ammount > 20:
+        return 0.2
     return 0.5
 
 def _calculate_cost(buttons_availible:list[str], action:str) -> float:
+    #print()
     global button_costs_default
     cost = _cost_multiplier_by_ammount(buttons_availible.count(action)) * button_costs_default[action]
     return max(cost, 0)
@@ -73,9 +80,12 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
     number_last = number_current
 
     if len(button_sequence) == 0:
-        if number_current == number_target: return (cost, "SOLVED")
-        else: return (cost, "NOT SOLVED")
-    if button_sequence[-1] != '=': button_sequence.append('=')
+        if number_current == number_target:
+            return (cost, "SOLVED")
+        else: 
+            return (cost, "NOT SOLVED")
+    if button_sequence[-1] != '=':
+        button_sequence.append('=')
     if buttons_implemented | set(button_sequence) != buttons_implemented:
         return (cost, "INVALID") # <- invalid, because button_sequence contains invalid buttons
 
@@ -85,11 +95,14 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
 
         number_current = max(0, min(number_current, 999999))
 
-        if cost_maximum != None and cost >= cost_maximum: return (cost, "NOT SOLVED") # costs too much
+        if cost_maximum is not None and cost >= cost_maximum:
+            return (cost, "NOT SOLVED") # costs too much
     
         if action in digits:
-            if not (last_operation in operations_with_argument): return (cost, "INVALID") # <- invalid input ("5 sq 2" does not make sense)
-            if number_input == '' and action == '0': return (cost, "INVALID") # <- leading zeros are a waste of button inputs; can be generated without the leading zero
+            if last_operation not in operations_with_argument:
+                return (cost, "INVALID") # <- invalid input ("5 sq 2" does not make sense)
+            if number_input == '' and action == '0':
+                return (cost, "INVALID") # <- leading zeros are a waste of button inputs; can be generated without the leading zero
             number_input += action
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
             #last_button = bi
@@ -100,7 +113,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             if last_operation in operations_with_argument and number_input == '':
                 return (cost, "INVALID") if action != "=" else (cost, "NOT SOLVED") # <- invalid input ("x + /" does not make sense) (but we do not want to add "+" to the invalid_trees either)
             cost += _calculate_cost(buttons_availible=buttons_availible, action=action)
-            if action != "=": buttons_availible.remove(action)
+            if action != "=":
+                buttons_availible.remove(action)
             if last_operation != '=':
                 eval_equals = True
                 last_operation_buffer = action
@@ -109,28 +123,40 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                 continue
         
         if eval_equals or action == "=":
-            if last_operation == '=' and action == '=': continue
+            if last_operation == '=' and action == '=':
+                continue
             if last_operation in operations_with_argument and number_input == '':
                 return (cost, "INVALID") if action != "=" else (cost, "NOT SOLVED") # <- invalid input ("x + /" does not make sense) (but we do not want to add "ad+d" to the invalid_trees either)
             
-            if last_operation == '+': number_current += int(number_input) # type: ignore
-            elif last_operation == '-': number_current = max(number_current - int(number_input), 0) # type: ignore # the game does not allow you to be under 0, I learned that the hard way
-            elif last_operation == '*': number_current *= int(number_input) # type: ignore
+            if last_operation == '+':
+                number_current += int(number_input) # type: ignore
+            elif last_operation == '-':
+                number_current = max(number_current - int(number_input), 0) # type: ignore # the game does not allow you to be under 0, I learned that the hard way
+            elif last_operation == '*':
+                number_current *= int(number_input) # type: ignore
             elif last_operation == '/':
-                if int(number_input) == 0: return (cost, "INVALID") # <- invalid input (a // 0 is not defined)
+                if int(number_input) == 0:
+                    return (cost, "INVALID") # <- invalid input (a // 0 is not defined)
                 number_current = number_current // int(number_input) # type: ignore
             elif last_operation == '%':
-                if int(number_input) <= 0: return (cost, "INVALID") # <- invalid input (a mod 0 is not defined)
+                if int(number_input) <= 0:
+                    return (cost, "INVALID") # <- invalid input (a mod 0 is not defined)
                 number_current = number_current % int(number_input) # type: ignore
 
-            elif last_operation == 'sq' : number_current = number_current * number_current
+            elif last_operation == 'sq' :
+                number_current = number_current * number_current
             elif last_operation == 'sqrt':
-                if int(number_current) < 0: return (cost, "INVALID") # <- invalid input (squareroot of negatives is not allowed)
+                if int(number_current) < 0:
+                    return (cost, "INVALID") # <- invalid input (squareroot of negatives is not allowed)
                 number_current = round(number_current ** 0.5)
-            elif last_operation == 'swap': number_current, number_target = number_target, number_current
-            elif last_operation == 'primes': number_current = _find_nearest_prime(number_current=number_current)
-            elif last_operation == 'X++': number_current += 1
-            elif last_operation == "X--": number_current = max(number_current - 1, 0)
+            elif last_operation == 'swap':
+                number_current, number_target = number_target, number_current
+            elif last_operation == 'primes':
+                number_current = _find_nearest_prime(number_current=number_current)
+            elif last_operation == 'X++':
+                number_current += 1
+            elif last_operation == "X--":
+                number_current = max(number_current - 1, 0)
             elif last_operation == 'reverse':
                 number_current = int(str(number_current)[::-1])
             elif last_operation == 'near':
@@ -143,7 +169,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             elif last_operation == 'X->0':
                 number_current = 0
             elif last_operation == 'cut':
-                if len(str(number_target)) < 2: return (cost, "INVALID") # <- the game does not cut the first digit, if it is the only one
+                if len(str(number_target)) < 2:
+                    return (cost, "INVALID") # <- the game does not cut the first digit, if it is the only one
                 number_target = int(str(number_target)[1:])
             elif last_operation == 'X+10':
                 number_current += 10
@@ -152,23 +179,28 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
             elif last_operation == 'coins':
                 number_current += coins
             elif last_operation == 'last':
-                if last == None: return (cost, "INVALID") # <- can not use "last" if there is no number provided
+                if last is None:
+                    return (cost, "INVALID") # <- can not use "last" if there is no number provided
                 number_current = last
             elif last_operation == '100-X':
                 number_current = max(0, 100-number_current)
             elif last_operation in operations_replace:
-                if len(last_operation) != 4: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
+                if len(last_operation) != 4:
+                    raise ValueError("'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
                 a, b = last_operation[0], last_operation[3]
                 number_current = int(str(number_current).replace(a, b))
             elif last_operation in operations_append:
-                if len(last_operation) != 2: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
+                if len(last_operation) != 2:
+                    raise ValueError("'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
                 a = last_operation[1]
                 number_current = int(str(number_current) + a)
                 # TODO cap number length (to 999999?) because the game has a cap
             elif last_operation in operations_prepend:
-                if len(last_operation) != 2: raise ValueError(f"'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
+                if len(last_operation) != 2:
+                    raise ValueError("'last_operation' can not be parsed since it is not of length 4. How did that even happen?")
                 a = last_operation[0]
-                if a == "0": return (cost, "INVALID")
+                if a == "0":
+                    return (cost, "INVALID")
                 number_current = int(a + str(number_current))
                 # TODO cap number length (to 999999?) because the game has a cap
             else:
@@ -176,9 +208,12 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
                 #ic(warning)
                 raise ValueError(warning)
             
-            if number_current != number_last: number_last = number_current
-            elif action == "=": pass
-            else: return (cost, "INVALID") # <- means whatever steps where taken did only increase cost but did not change anything
+            if number_current != number_last:
+                number_last = number_current
+            elif action == "=":
+                pass
+            else:
+                return (cost, "INVALID") # <- means whatever steps where taken did only increase cost but did not change anything
 
             number_input = ''
             last_operation = '=' if last_operation_buffer == '' else last_operation_buffer
@@ -188,7 +223,8 @@ def check_button_sequence(button_sequence:list[str], buttons_availible:list[str]
     
     number_current = max(0, min(number_current, 999999))
 
-    if number_current != number_target: return (cost, "NOT SOLVED")
+    if number_current != number_target:
+        return (cost, "NOT SOLVED")
     return (cost, "SOLVED")
 
 def get_local_buttons_availible(buttons_availible:list[str], buttons_used:list[str]) -> list[str]:
@@ -211,7 +247,8 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
         while (iterations < max_iterations) and branches != []:
             iterations += 1
 
-            if debug: print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}} | len(branches): {len(branches):>06}", end="")
+            if debug:
+                print(f"\riterations: {iterations:>0{iterations_max_len}} | solutions: {solutions_ammount:>0{solutions_ammount_max_len}} | len(branches): {len(branches):>06}", end="")
 
             if (iterations % 5000) == 0:
                 branches = sorted(branches, key=lambda x: x[0])
@@ -246,7 +283,8 @@ def brute_force_solution(buttons:list[str], number_current:int, number_target:in
     except Exception as e:
         raise e
     
-    if debug: print()
+    if debug:
+        print()
     
     return solutions
 
@@ -263,3 +301,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

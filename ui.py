@@ -14,7 +14,7 @@ class GUI():
         FOREGROUND_DISABLED = "#808080" # color disabled
 
         self.mw = tkinter.Tk()
-        self.mw.title(f"Calculate It move calculator")
+        self.mw.title("Calculate It move calculator")
         #self.mw.geometry("1000x800")
         self.mw.columnconfigure(index=1, minsize=0, weight=1)
         self.mw.rowconfigure(index=1, minsize=0, weight=1)
@@ -96,7 +96,7 @@ class GUI():
         self.btn_flip_ctrl_dir.grid(row=1, column=0)
 
         self.btn_calculate = tkinter.Button(
-            master=self.frame_control, foreground=FOREGROUND, background=BACKGROUND, text=f"CALCULATE", command=self.calculate
+            master=self.frame_control, foreground=FOREGROUND, background=BACKGROUND, text="CALCULATE", command=self.calculate
         )
         self.btn_calculate.grid(row=1, column=1)
 
@@ -190,8 +190,10 @@ class GUI():
                 master=self.frame_append_buttons, text=f"{name}: {self.btns_actions_ammounts[name]}", foreground=fg, background=BACKGROUND,
                 command=(lambda name=name: self.handle_button(name))
             )
-            if i == 0: button.grid(row=3, column=1)
-            else:      button.grid(row=((i-1) // 3), column=((i-1) % 3))
+            if i == 0:
+                button.grid(row=3, column=1)
+            else:
+                button.grid(row=((i-1) // 3), column=((i-1) % 3))
             self.buttons[name] = button
         
         # custom buttons
@@ -208,17 +210,23 @@ class GUI():
         self.mw.mainloop()
     
     def _flip_ctrl_direction(self) -> None:
-        if   self._ctrl_direction == "ADD": self._ctrl_direction = "SUB"
-        elif self._ctrl_direction == "SUB": self._ctrl_direction = "ADD"
-        else: raise ValueError(f"self._ctrl_direction can only be 'ADD' or 'SUB', not '{self._ctrl_direction}'")
+        if   self._ctrl_direction == "ADD":
+            self._ctrl_direction = "SUB"
+        elif self._ctrl_direction == "SUB":
+            self._ctrl_direction = "ADD"
+        else:
+            raise ValueError(f"self._ctrl_direction can only be 'ADD' or 'SUB', not '{self._ctrl_direction}'")
 
         self.btn_flip_ctrl_dir.configure(text=f"mode: {self._ctrl_direction}")
 
     def handle_button(self, button_name:str) -> None:
         #print(f"pressed '{button_name}'")
-        if   self._ctrl_direction == "ADD": self.btns_actions_ammounts[button_name] = max(0, self.btns_actions_ammounts[button_name] + 1)
-        elif self._ctrl_direction == "SUB": self.btns_actions_ammounts[button_name] = max(0, self.btns_actions_ammounts[button_name] - 1)
-        else: raise ValueError(f"self._ctrl_direction can only be 'ADD' or 'SUB', not '{self._ctrl_direction}'")
+        if   self._ctrl_direction == "ADD":
+            self.btns_actions_ammounts[button_name] = max(0, self.btns_actions_ammounts[button_name] + 1)
+        elif self._ctrl_direction == "SUB":
+            self.btns_actions_ammounts[button_name] = max(0, self.btns_actions_ammounts[button_name] - 1)
+        else:
+            raise ValueError(f"self._ctrl_direction can only be 'ADD' or 'SUB', not '{self._ctrl_direction}'")
 
         self.buttons[button_name].configure(text=f"{button_name}: {self.btns_actions_ammounts[button_name]}")
 
@@ -226,7 +234,8 @@ class GUI():
         buttons: list[str] = []
         for name in self.btns_actions_ammounts:
             # "ub" = "upper bound"
-            if (ub:=self.btns_actions_ammounts[name]) <= 0: continue
+            if (ub:=self.btns_actions_ammounts[name]) <= 0:
+                continue
             for _i in range(ub):
                 buttons.append(name)
         
@@ -239,11 +248,13 @@ class GUI():
                 if line[:len(button_name)] == button_name:
                     matched_button = button_name
                     break
-            if matched_button == None: continue
+            if matched_button is None:
+                continue
             if matched_button.count(" ") < line.count(" "):
                 line_rest = " ".join(line.split(" ")[matched_button.count(" ")+1:])
                 ammount = eval(line_rest)
-                if type(ammount) != int: continue
+                if type(ammount) is not int:
+                    continue
             else:
                 ammount = 1
             buttons += [button_name] * ammount
