@@ -23,8 +23,10 @@ button_costs_default: dict[str, float] = {
     }
 for digit in digits:
     button_costs_default[digit] = 0.8 if len(digit) == 1 else 0.7
-for binary_operand in operations_simple:
-    button_costs_default[binary_operand] = 1.2
+for unary_operand in operations_simple:
+    button_costs_default[unary_operand] = 1.2
+for binary_operand in operations_with_argument:
+    button_costs_default[binary_operand] = 1.1
 for name in operations_append | operations_prepend | operations_replace:
     button_costs_default[name] = 0.75
 
