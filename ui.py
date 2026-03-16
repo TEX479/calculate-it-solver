@@ -278,7 +278,7 @@ class GUI():
 
         solutions = moveFinder.brute_force_solution(
             buttons=buttons.copy(), number_current=number_current, number_target=number_target, coins=coins, last=last,
-            max_iterations=iterations, increase_iterations=inc_iterations, debug=debug
+            max_iterations=iterations, debug=debug
         )
         solutions = reversed(sorted(solutions, key=lambda x: x[0]))
         #print(solutions)

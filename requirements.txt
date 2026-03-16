@@ -1,3 +1,4 @@
 icecream
 sympy
-tkinter
+# tkinter needs to be provided by the host os
+# tkinter
