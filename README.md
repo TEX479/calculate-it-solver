@@ -1,3 +1,6 @@
+# ARCHIVAL
+This repository is no longer being maintained, as the project has been rewritten in rust and moved to Codeberg. Both decisions are final. The new repository can be found [here].(https://codeberg.org/tex_479/calculate-it-solver-ui)
+
 ### Contents
 - [Why?](#why)
 - [Setup](#setup)
